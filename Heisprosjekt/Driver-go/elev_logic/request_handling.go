@@ -1,6 +1,9 @@
 package requests
 
-import "elev_config"
+import (
+	"Driver-go/elevio"
+	"Driver-go/elev_config"
+)
 
 
 func requests_above(e Elevator) int {
@@ -25,4 +28,16 @@ func requests_below(e Elevator) int {
 	return 0
 }
 
-//Git works
+func requests_here(e Elevator) int {
+	for btn := 0; btn < n_buttons; btn++ {
+		if e.requestMatrix[e.floor][btn] == 1 {
+			return 1
+		}
+
+	}
+	return 0
+}
+
+func add_order(e Elevator, floor int, btnType elevio.ButtonType) {
+	e.requestMatrix[floor][btnType] = 1
+}

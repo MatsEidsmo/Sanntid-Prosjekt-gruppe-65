@@ -1,7 +1,9 @@
 package main
 
-import "Driver-go/elevio"
-
+import (
+		"Driver-go/elevio"
+		"fmt"
+)
 func main1() {
 
 	numFloors := 4
