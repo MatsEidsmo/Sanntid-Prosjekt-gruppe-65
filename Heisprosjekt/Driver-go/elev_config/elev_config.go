@@ -1,10 +1,10 @@
 package elev_config
 
-const n_floors int = 4
-const n_buttons int = 3
+const N_floors int = 4
+const N_buttons int = 3
 
 type Elevator struct {
-	floor int
-	dir int
-	requestMatrix [n_floors][n_buttons]int
+	Floor int
+	Dir int
+	RequestMatrix [N_floors][N_buttons]int
 }
