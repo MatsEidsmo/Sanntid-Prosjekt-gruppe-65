@@ -1,4 +1,4 @@
-package Elevator
+package elev_config
 
 const n_floors int = 4
 const n_buttons int = 3

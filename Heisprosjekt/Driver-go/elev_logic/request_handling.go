@@ -1,5 +1,8 @@
 package requests
 
+import "elev_config"
+
+
 func requests_above(e Elevator) int {
 	for f := e.floor+1; f < n_floors; f++ {
 		for btn := e.button; btn < n_buttons; btn++ {
