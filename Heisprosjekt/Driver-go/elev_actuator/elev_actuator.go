@@ -8,6 +8,6 @@ import (
 func Open_Door() {
 	eio.SetMotorDirection(eio.MD_Stop)
 	eio.SetDoorOpenLamp(true)
-	time.Sleep(3*time.Second)
+	time.Sleep(2*time.Second)
 	eio.SetDoorOpenLamp(false)
 }
