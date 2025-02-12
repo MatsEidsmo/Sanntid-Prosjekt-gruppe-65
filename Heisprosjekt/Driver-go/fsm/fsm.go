@@ -14,7 +14,8 @@ func Run(e *ec.Elevator, pushed_btn chan eio.ButtonEvent, obstr_chann chan bool,
 		case btn := <- pushed_btn:
 			el.Add_Request(e, btn.Floor, btn.Button)
 			if e.Dir == eio.MD_Stop {
-				el.Choose_Dir(e)
+				curr_dir := el.Choose_Dir(e)
+				eio.SetMotorDirection(curr_dir)
 
 			}
 		case floor := <- floor_sensor:
