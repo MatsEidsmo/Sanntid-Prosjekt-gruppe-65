@@ -54,10 +54,12 @@ func Choose_Dir(e *ec.Elevator) eio.MotorDirection {
 	switch e.Dir {
 	case eio.MD_Up:
 		if requests_above(e) {
+			e.Dir = eio.MD_Up
 			return eio.MD_Up
 			// e.Dir = eio.MD_Up
 			// eio.SetMotorDirection(e.Dir)
 		} else if requests_below(e) {
+			e.Dir = eio.MD_Down
 			return eio.MD_Down
 			// e.Dir = eio.MD_Down
 			// eio.SetMotorDirection(e.Dir)
@@ -67,10 +69,12 @@ func Choose_Dir(e *ec.Elevator) eio.MotorDirection {
 		}
 	case eio.MD_Down:
 		if requests_below(e) {
+			e.Dir = eio.MD_Down
 			return eio.MD_Down
 			// e.Dir = eio.MD_Down
 			// eio.SetMotorDirection(e.Dir)
 		} else if requests_above(e) {
+			e.Dir = eio.MD_Up
 			return eio.MD_Up
 			// e.Dir = eio.MD_Up
 			// eio.SetMotorDirection(e.Dir)
@@ -80,10 +84,12 @@ func Choose_Dir(e *ec.Elevator) eio.MotorDirection {
 		}
 	case eio.MD_Stop:
 		if requests_below(e) {
+			e.Dir = eio.MD_Down
 			return eio.MD_Down
 			// e.Dir = eio.MD_Down
 			// eio.SetMotorDirection(e.Dir)
 		} else if requests_above(e) {
+			e.Dir = eio.MD_Up
 			return eio.MD_Up
 			// e.Dir = eio.MD_Up
 			// eio.SetMotorDirection(e.Dir)
