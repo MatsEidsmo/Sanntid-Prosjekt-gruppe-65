@@ -5,8 +5,8 @@ import (
     ec "Driver-go/elev_config"
     fsm "Driver-go/fsm"
 	el "Driver-go/elev_logic"
-	// ea "Driver-go/elev_actuator"
-    "time"
+	ea "Driver-go/elev_actuator"
+    //"time"
     "fmt"
 )
 //import "fmt"
@@ -25,8 +25,9 @@ func Initialize_Elev_Pos(e *ec.Elevator, drv_floors chan int) {
     e.Dir = eio.MD_Stop
 
     el.Clear_RequestMatrix(e)
+    
 
-    time.Sleep(2*time.Second)
+    
 
 }
 
@@ -42,6 +43,8 @@ func main() {
 
     drv_floors := make(chan int)
     go eio.PollFloorSensor(drv_floors)
+    fmt.Println("1")
+    ea.Timer_init()
 
     Initialize_Elev_Pos(&e, drv_floors)
 
@@ -58,10 +61,10 @@ func main() {
     eio.SetButtonLamp(eio.BT_Cab, 2, false)
     eio.SetButtonLamp(eio.BT_Cab, 3, false)
 
-    
+    drv_door_timer := make(chan bool)
 
     fmt.Println("Before Run()")
 
-    defer fsm.Run(&e, drv_buttons, drv_obstr, drv_floors)
+    defer fsm.Run(&e, drv_buttons, drv_obstr, drv_floors, drv_door_timer)
 
 }

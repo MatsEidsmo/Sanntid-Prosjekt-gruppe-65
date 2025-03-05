@@ -39,6 +39,8 @@ func requests_here(e *ec.Elevator) int {
 func Add_Request(e *ec.Elevator, floor int, btnType eio.ButtonType) {
 	e.RequestMatrix[floor][btnType] = 1
 	eio.SetButtonLamp(btnType, floor, true)
+	
+	
 }
 
 func Clear_Floor_Requests(e *ec.Elevator) {
@@ -50,39 +52,56 @@ func Clear_Floor_Requests(e *ec.Elevator) {
 	eio.SetButtonLamp(eio.BT_Cab, e.Floor, false)
 }
 
-func Choose_Dir(e *ec.Elevator) {
+func Choose_Dir(e *ec.Elevator) eio.MotorDirection {
 	switch e.Dir {
 	case eio.MD_Up:
 		if requests_above(e) {
 			e.Dir = eio.MD_Up
-			eio.SetMotorDirection(e.Dir)
+			return eio.MD_Up
+			// e.Dir = eio.MD_Up
+			// eio.SetMotorDirection(e.Dir)
 		} else if requests_below(e) {
 			e.Dir = eio.MD_Down
-			eio.SetMotorDirection(e.Dir)
+			return eio.MD_Down
+			// e.Dir = eio.MD_Down
+			// eio.SetMotorDirection(e.Dir)
 		} else {
-			eio.SetMotorDirection(eio.MD_Stop)
+			return eio.MD_Stop
+			// eio.SetMotorDirection(eio.MD_Stop)
 		}
 	case eio.MD_Down:
 		if requests_below(e) {
 			e.Dir = eio.MD_Down
-			eio.SetMotorDirection(e.Dir)
+			return eio.MD_Down
+			// e.Dir = eio.MD_Down
+			// eio.SetMotorDirection(e.Dir)
 		} else if requests_above(e) {
 			e.Dir = eio.MD_Up
-			eio.SetMotorDirection(e.Dir)
+			return eio.MD_Up
+			// e.Dir = eio.MD_Up
+			// eio.SetMotorDirection(e.Dir)
 		} else {
-			eio.SetMotorDirection(eio.MD_Stop)
+			return eio.MD_Stop
+			//eio.SetMotorDirection(eio.MD_Stop)
 		}
 	case eio.MD_Stop:
 		if requests_below(e) {
 			e.Dir = eio.MD_Down
-			eio.SetMotorDirection(e.Dir)
+			return eio.MD_Down
+			// e.Dir = eio.MD_Down
+			// eio.SetMotorDirection(e.Dir)
 		} else if requests_above(e) {
 			e.Dir = eio.MD_Up
-			eio.SetMotorDirection(e.Dir)
+			return eio.MD_Up
+			// e.Dir = eio.MD_Up
+			// eio.SetMotorDirection(e.Dir)
 		} else {
-			eio.SetMotorDirection(eio.MD_Stop)
+			return eio.MD_Stop
+			//eio.SetMotorDirection(eio.MD_Stop)
 		}
 	}
+
+	return eio.MD_Stop
 }
 
 func Stop_Here(e *ec.Elevator) bool {
