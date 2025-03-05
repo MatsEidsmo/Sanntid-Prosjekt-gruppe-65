@@ -53,8 +53,10 @@ func Run(e *ec.Elevator, pushed_btn chan eio.ButtonEvent, obstr_chann chan bool,
 			
 
 		case obstr := <- obstr_chann:
-			if obstr {
-				ea.Timer_start()
+			println("Obstruction!")
+			e.Obstruction = obstr
+			if !obstr && e.Behaviour == ec.EB_DoorOpen {
+				ea.Open_Door()
 			}
 		}
 	}
