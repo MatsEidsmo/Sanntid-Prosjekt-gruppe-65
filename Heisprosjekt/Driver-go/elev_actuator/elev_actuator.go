@@ -1,23 +1,42 @@
 package elev_actuator
 
 import (
-	eio "Driver-go/elevio"
-	"time"
 	ec "Driver-go/elev_config"
 	el "Driver-go/elev_logic"
+	eio "Driver-go/elevio"
+	"time"
+	"fmt"
 )
 
-func Open_Door(door_timer chan bool, e *ec.Elevator) {
-	timer := time.NewTimer(3*time.Second)
+var DoorTimer *time.Timer
 
-	go func() {
-		eio.SetMotorDirection(eio.MD_Stop)
-		eio.SetDoorOpenLamp(true)
-		<-timer.C
-		eio.SetDoorOpenLamp(false)
-		el.Clear_Floor_Requests(e)
-		door_timer <- true
-	}()
+func Timer_init() {
+	DoorTimer = time.NewTimer(ec.DOOR_TIMEOUT)
+	if !DoorTimer.Stop() {
+		<- DoorTimer.C
+	}
+}
+
+func Timer_start() {
+
+	DoorTimer.Stop()
+	select {
+	case <- DoorTimer.C:
+	default:
+	}
+	DoorTimer.Reset(ec.DOOR_TIMEOUT)
+}
+
+
+
+func Open_Door(e *ec.Elevator) {
+	
+	Timer_start()
+	eio.SetMotorDirection(eio.MD_Stop)
+	eio.SetDoorOpenLamp(true)
+	fmt.Println("Door is Open!")
+	el.Clear_Floor_Requests(e)
+	
 
 
 	// eio.SetMotorDirection(eio.MD_Stop)

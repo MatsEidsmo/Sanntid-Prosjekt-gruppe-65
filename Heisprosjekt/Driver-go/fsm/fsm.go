@@ -14,10 +14,11 @@ func Run(e *ec.Elevator, pushed_btn chan eio.ButtonEvent, obstr_chann chan bool,
 		select {
 		case btn := <- pushed_btn:
 			el.Add_Request(e, btn.Floor, btn.Button)
+			fmt.Println("btn pushed recieved")
 			//if e.Dir == eio.MD_Stop {
 				curr_dir := el.Choose_Dir(e)
 				if btn.Floor == e.Floor && e.Dir == eio.MD_Stop{
-					ea.Open_Door(door_timer, e)
+					ea.Open_Door(e)
 				}
 				if !door_open_flag {
 					eio.SetMotorDirection(curr_dir)
@@ -32,14 +33,15 @@ func Run(e *ec.Elevator, pushed_btn chan eio.ButtonEvent, obstr_chann chan bool,
 			if el.Stop_Here(e) {
 				fmt.Println("Elevator stopping")
 				door_open_flag = true
-				ea.Open_Door(door_timer, e)
-				e.Dir = eio.MD_Stop
-				fmt.Println("Req: ", e.RequestMatrix[3][2])  // Nye bestillinger blir ike lagret i matrisen mens døra er åpen
+				ea.Open_Door(e)
+				e.Dir = eio.MD_Stop 
 				
 			}
-		case <-door_timer:
+		case <- ea.DoorTimer.C:
+			fmt.Println("doortimeout")
 			door_open_flag = false
 			curr_dir := el.Choose_Dir(e)
+			eio.SetDoorOpenLamp(false)
 			eio.SetMotorDirection(curr_dir)
 
 		case obstr := <- obstr_chann:

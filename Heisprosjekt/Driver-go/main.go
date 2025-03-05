@@ -25,6 +25,7 @@ func Initialize_Elev_Pos(e *ec.Elevator, drv_floors chan int) {
     e.Dir = eio.MD_Stop
 
     el.Clear_RequestMatrix(e)
+    
 
     
 
@@ -42,6 +43,8 @@ func main() {
 
     drv_floors := make(chan int)
     go eio.PollFloorSensor(drv_floors)
+    fmt.Println("1")
+    ea.Timer_init()
 
     Initialize_Elev_Pos(&e, drv_floors)
 
@@ -59,7 +62,6 @@ func main() {
     eio.SetButtonLamp(eio.BT_Cab, 3, false)
 
     drv_door_timer := make(chan bool)
-    go ea.Open_Door(drv_door_timer, &e)
 
     fmt.Println("Before Run()")
 
