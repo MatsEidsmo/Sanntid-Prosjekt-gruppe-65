@@ -46,7 +46,7 @@ func Run(e *ec.Elevator, pushed_btn chan eio.ButtonEvent, obstr_chann chan bool,
 
 		case obstr := <- obstr_chann:
 			if obstr {
-				//Stop()
+				ea.Timer_start()
 			}
 		}
 	}
