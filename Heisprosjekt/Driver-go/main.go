@@ -8,6 +8,7 @@ import (
 	ea "Driver-go/elev_actuator"
     //"time"
     "fmt"
+    bc "Driver-go/broadcast"
 )
 //import "fmt"
 
@@ -63,7 +64,14 @@ func main() {
 
     //drv_door_timer := make(chan bool)
 
-    fmt.Println("Before Run()")
+   
+    
+    
+    go bc.WriteUDP("udp", bc.Port2)
+    go bc.ListenUDP("udp", bc.Port2)
+
+    
+    
 
     defer fsm.Run(&e, drv_buttons, drv_obstr, drv_floors)
 
