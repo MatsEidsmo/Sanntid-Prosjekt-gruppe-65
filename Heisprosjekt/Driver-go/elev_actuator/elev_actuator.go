@@ -29,18 +29,27 @@ func Timer_start() {
 
 
 
-func Open_Door(e *ec.Elevator) {
+func Open_Door() {
 	
 	Timer_start()
 	eio.SetMotorDirection(eio.MD_Stop)
 	eio.SetDoorOpenLamp(true)
 	fmt.Println("Door is Open!")
-	el.Clear_Floor_Requests(e)
 	
+}
 
+func Upon_Door_Timeout(e *ec.Elevator) {
+	fmt.Println("doortimeout")
 
-	// eio.SetMotorDirection(eio.MD_Stop)
-	// eio.SetDoorOpenLamp(true)
-	// time.Sleep(2*time.Second)
-	// eio.SetDoorOpenLamp(false)
+			
+	curr_dir := el.Choose_Dir(e)
+	eio.SetDoorOpenLamp(false)
+	el.Clear_Floor_Requests(e)
+	if curr_dir == eio.MD_Stop {
+		e.Behaviour = ec.EB_Idle
+	} else {
+		e.Behaviour = ec.EB_Moving
+	}
+
+	eio.SetMotorDirection(curr_dir)
 }

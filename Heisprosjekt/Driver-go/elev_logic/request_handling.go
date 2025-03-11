@@ -39,6 +39,8 @@ func requests_here(e *ec.Elevator) int {
 func Add_Request(e *ec.Elevator, floor int, btnType eio.ButtonType) {
 	e.RequestMatrix[floor][btnType] = 1
 	eio.SetButtonLamp(btnType, floor, true)
+	
+	
 }
 
 func Clear_Floor_Requests(e *ec.Elevator) {
