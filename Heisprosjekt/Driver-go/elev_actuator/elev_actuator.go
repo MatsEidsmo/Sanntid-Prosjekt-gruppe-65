@@ -41,6 +41,8 @@ func Open_Door() {
 func Upon_Door_Timeout(e *ec.Elevator) {
 	fmt.Println("doortimeout")
 
+
+
 			
 	curr_dir := el.Choose_Dir(e)
 	eio.SetDoorOpenLamp(false)

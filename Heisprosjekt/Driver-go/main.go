@@ -62,7 +62,9 @@ func main() {
     eio.SetButtonLamp(eio.BT_Cab, 2, false)
     eio.SetButtonLamp(eio.BT_Cab, 3, false)
 
+
     //drv_door_timer := make(chan bool)
+
 
    
     
@@ -72,6 +74,7 @@ func main() {
 
     
     
+
 
     defer fsm.Run(&e, drv_buttons, drv_obstr, drv_floors)
 
