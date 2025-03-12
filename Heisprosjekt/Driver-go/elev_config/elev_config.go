@@ -8,8 +8,8 @@ import (
 const N_floors int = 4
 const N_buttons int = 3
 
-
-const DOOR_TIMEOUT = 3 * time.Second
+const TRAVEL_TIME = 3000 * time.Millisecond
+const DOOR_TIMEOUT = 3000 * time.Millisecond
 
 type ElevatorBehavior int
 const (

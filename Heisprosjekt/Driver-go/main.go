@@ -68,14 +68,14 @@ func main() {
     
 
 
-    txChan := make(chan string)
+    txChan := make(chan ec.Elevator)
     rxChan := make(chan string)
     go nw.Transmitter(20020, txChan)
     go nw.Receiver(20023, rxChan)
 
     go func() {
         for {
-            txChan <- "Hello!"
+            txChan <- e
             time.Sleep(2*time.Second)
         }
 

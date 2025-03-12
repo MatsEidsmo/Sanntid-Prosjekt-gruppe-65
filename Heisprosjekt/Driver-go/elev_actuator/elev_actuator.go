@@ -25,6 +25,7 @@ func Timer_start() {
 	default:
 	}
 	DoorTimer.Reset(ec.DOOR_TIMEOUT)
+	
 }
 
 
