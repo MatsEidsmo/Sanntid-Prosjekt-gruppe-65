@@ -1,16 +1,18 @@
 package main
 
 import (
-    eio "Driver-go/elevio"
-    ec "Driver-go/elev_config"
-    fsm "Driver-go/fsm"
-	el "Driver-go/elev_logic"
 	ea "Driver-go/elev_actuator"
-    //"time"
-    "fmt"
-    bc "Driver-go/broadcast"
+	ec "Driver-go/elev_config"
+	el "Driver-go/elev_logic"
+	eio "Driver-go/elevio"
+	fsm "Driver-go/fsm"
+	"time"
+
+	//"time"
+	nw "Driver-go/network/bcast"
+	"fmt"
 )
-//import "fmt"
+
 
 func Initialize_Elev_Pos(e *ec.Elevator, drv_floors chan int) {
     floornumber := <-drv_floors
@@ -63,14 +65,23 @@ func main() {
     eio.SetButtonLamp(eio.BT_Cab, 3, false)
 
 
-    //drv_door_timer := make(chan bool)
+    
 
 
-   
+    txChan := make(chan string)
+    rxChan := make(chan string)
+    go nw.Transmitter(20020, txChan)
+    go nw.Receiver(20023, rxChan)
+
+    go func() {
+        for {
+            txChan <- "Hello!"
+            time.Sleep(2*time.Second)
+        }
+
+    }()
     
     
-    go bc.WriteUDP("udp", bc.Port2)
-    go bc.ListenUDP("udp", bc.Port2)
 
     
     
