@@ -6,6 +6,7 @@ import (
 	el "Driver-go/elev_logic"
 	eio "Driver-go/elevio"
 	fsm "Driver-go/fsm"
+	"Driver-go/orders"
 	"time"
 
 	//"time"
@@ -68,20 +69,27 @@ func main() {
     
 
 
-    txChan := make(chan ec.Elevator)
-    rxChan := make(chan string)
-    go nw.Transmitter(20020, txChan)
-    go nw.Receiver(20023, rxChan)
+    //txChan := make(chan eio.ButtonEvent)
+    //rxChan := make(chan string)
+    go nw.Transmitter(20023, drv_buttons)
+    go nw.Receiver(20018, drv_buttons)
 
     go func() {
         for {
-            txChan <- e
+            drv_buttons <- orders.SendBtn(drv_buttons)
             time.Sleep(2*time.Second)
         }
 
     }()
     
-    
+
+    go func() {
+        for {
+            Recieved_btn := <- drv_buttons
+            eio.PrintButtonEvent(Recieved_btn)
+        }
+
+    }()
 
     
     

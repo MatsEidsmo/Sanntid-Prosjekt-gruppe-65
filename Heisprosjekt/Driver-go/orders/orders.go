@@ -1,16 +1,16 @@
 package orders
 
 import (
-	ea "Driver-go/elev_actuator"
+	//ea "Driver-go/elev_actuator"
 	ec "Driver-go/elev_config"
 	el "Driver-go/elev_logic"
 	eio "Driver-go/elevio"
-	fsm "Driver-go/fsm"
-	"time"
+// 	fsm "Driver-go/fsm"
+//	"time"
 
-	//"time"
-	nw "Driver-go/network/bcast"
-	"fmt"
+// 	"time"
+// 	nw "Driver-go/network/bcast"
+// 	"fmt"
 )
 
 type OrderState int
@@ -85,4 +85,8 @@ func TimeToIdle(e *ec.Elevator) int {
 		e.Floor += int(e.Dir)
 		duration += int(ec.TRAVEL_TIME)
 	}
+}
+
+func SendBtn(pushed_btn chan eio.ButtonEvent) eio.ButtonEvent {
+	return <-pushed_btn
 }
