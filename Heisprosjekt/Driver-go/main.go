@@ -7,7 +7,7 @@ import (
 	eio "Driver-go/elevio"
 	fsm "Driver-go/fsm"
 	"Driver-go/orders"
-	"time"
+	//"time"
 
 	//"time"
 	nw "Driver-go/network/bcast"
@@ -69,15 +69,17 @@ func main() {
     
 
 
-    //txChan := make(chan eio.ButtonEvent)
-    //rxChan := make(chan string)
-    go nw.Transmitter(20023, drv_buttons)
-    go nw.Receiver(20018, drv_buttons)
+    txBtnChan := make(chan eio.ButtonEvent)
+    rxBtnChan := make(chan eio.ButtonEvent)
+
+
+    go nw.Transmitter(20023, txBtnChan)
+    go nw.Receiver(20018, rxBtnChan)
 
     go func() {
         for {
-            drv_buttons <- orders.SendBtn(drv_buttons)
-            time.Sleep(2*time.Second)
+            txBtnChan <- orders.SendBtn(drv_buttons)
+            //time.Sleep(1*time.Second)
         }
 
     }()
@@ -85,7 +87,7 @@ func main() {
 
     go func() {
         for {
-            Recieved_btn := <- drv_buttons
+            Recieved_btn := <- rxBtnChan
             eio.PrintButtonEvent(Recieved_btn)
         }
 
