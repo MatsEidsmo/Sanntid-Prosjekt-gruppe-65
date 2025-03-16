@@ -30,11 +30,12 @@ func Timer_start() {
 
 
 
-func Open_Door() {
+func Open_Door(e *ec.Elevator) {
 	
 	Timer_start()
 	eio.SetMotorDirection(eio.MD_Stop)
 	eio.SetDoorOpenLamp(true)
+	e.Behaviour = ec.EB_DoorOpen
 	fmt.Println("Door is Open!")
 	
 }
@@ -42,7 +43,11 @@ func Open_Door() {
 func Upon_Door_Timeout(e *ec.Elevator) {
 	fmt.Println("doortimeout")
 
-
+	if e.Obstruction {
+		println("Obstruction true")
+		Open_Door(e)
+		return
+	}
 
 			
 	curr_dir := el.Choose_Dir(e)
