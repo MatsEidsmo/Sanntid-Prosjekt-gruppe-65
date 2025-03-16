@@ -35,6 +35,10 @@ type ButtonEvent struct {
 	Button ButtonType
 }
 
+func PrintButtonEvent(btn_event ButtonEvent) {
+	fmt.Println("Button floor: ", string(btn_event.Floor), "Button type:", string(btn_event.Button))
+}
+
 
 
 func Init(addr string, numFloors int) {

@@ -1,15 +1,21 @@
 package main
 
 import (
-    eio "Driver-go/elevio"
-    ec "Driver-go/elev_config"
-    fsm "Driver-go/fsm"
-	el "Driver-go/elev_logic"
 	ea "Driver-go/elev_actuator"
-    //"time"
-    "fmt"
+	ec "Driver-go/elev_config"
+	el "Driver-go/elev_logic"
+	eio "Driver-go/elevio"
+	fsm "Driver-go/fsm"
+
+	// "Driver-go/orders"
+
+	//"time"
+
+	//"time"
+	//nw "Driver-go/network/bcast"
+	"fmt"
 )
-//import "fmt"
+
 
 func Initialize_Elev_Pos(e *ec.Elevator, drv_floors chan int) {
     floornumber := <-drv_floors
@@ -25,6 +31,8 @@ func Initialize_Elev_Pos(e *ec.Elevator, drv_floors chan int) {
     e.Dir = eio.MD_Stop
 
     el.Clear_RequestMatrix(e)
+    
+    e.Behaviour = ec.EB_Idle
     
 
     
@@ -61,13 +69,40 @@ func main() {
     eio.SetButtonLamp(eio.BT_Cab, 2, false)
     eio.SetButtonLamp(eio.BT_Cab, 3, false)
 
+
     
 
-    fmt.Println("Before Run()")
+<<<<<<< HEAD
+=======
 
-    if e.Obstruction {
-		println("obstruction true")
-	}
+    txBtnChan := make(chan eio.ButtonEvent)
+    rxBtnChan := make(chan eio.ButtonEvent)
+
+
+    go nw.Transmitter(20023, txBtnChan)
+    go nw.Receiver(20018, rxBtnChan)
+
+    go func() {
+        for {
+            txBtnChan <- orders.SendBtn(drv_buttons)
+            //time.Sleep(1*time.Second)
+        }
+
+    }()
+    
+
+    go func() {
+        for {
+            Recieved_btn := <- rxBtnChan
+            eio.PrintButtonEvent(Recieved_btn)
+        }
+
+    }()
+
+>>>>>>> 94233afcadf8c25fa185ce00f97232eb4ad5a018
+    
+    
+
 
     defer fsm.Run(&e, drv_buttons, drv_obstr, drv_floors)
 
