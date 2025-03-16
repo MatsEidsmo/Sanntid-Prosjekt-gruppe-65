@@ -24,4 +24,5 @@ type Elevator struct {
 	RequestMatrix 	[N_floors][N_buttons] int
 	Behaviour 		ElevatorBehavior
 	Obstruction 	bool
+	ElevID			string
 }

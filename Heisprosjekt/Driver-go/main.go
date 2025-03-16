@@ -12,7 +12,7 @@ import (
 	//"time"
 
 	//"time"
-	nw "Driver-go/network/bcast"
+	//nw "Driver-go/network/bcast"
 	"fmt"
 )
 
@@ -33,6 +33,7 @@ func Initialize_Elev_Pos(e *ec.Elevator, drv_floors chan int) {
     el.Clear_RequestMatrix(e)
     
     e.Behaviour = ec.EB_Idle
+
     
 
     
@@ -43,6 +44,8 @@ func main() {
     numFloors := 4
 
     var e ec.Elevator
+    var e2 ec.Elevator
+    var e3 ec.Elevator
 
 	eio.Init("localhost:15657", numFloors)
 
@@ -71,32 +74,7 @@ func main() {
 
 
     
-
-
-    txBtnChan := make(chan eio.ButtonEvent)
-    rxBtnChan := make(chan eio.ButtonEvent)
-
-
-    go nw.Transmitter(20023, txBtnChan)
-    go nw.Receiver(20018, rxBtnChan)
-
-    go func() {
-        for {
-            txBtnChan <- orders.SendBtn(drv_buttons)
-            //time.Sleep(1*time.Second)
-        }
-
-    }()
-    
-
-    go func() {
-        for {
-            Recieved_btn := <- rxBtnChan
-            eio.PrintButtonEvent(Recieved_btn)
-        }
-
-    }()
-
+    go orders.RecieveOrderAndState(&e2, &e3)
     
     
 

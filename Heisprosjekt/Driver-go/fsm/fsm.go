@@ -5,8 +5,8 @@ import (
 	ec "Driver-go/elev_config"
 	el "Driver-go/elev_logic"
 	eio "Driver-go/elevio"
-	nw "Driver-go/network/bcast"
-	//orders "Driver-go/orders"
+	//nw "Driver-go/network/bcast"
+	orders "Driver-go/orders"
 	"fmt"
 )
 
@@ -15,17 +15,19 @@ func Run(e *ec.Elevator, pushed_btn chan eio.ButtonEvent, obstr_chann chan bool,
 	for {
 		select {
 		case btn := <- pushed_btn:
+			fmt.Println("Button recieved!")
 
-			txBtnChan := make(chan eio.ButtonEvent)
-			rxBtnChan := make(chan eio.ButtonEvent)
+			new_order := orders.NewOrder(btn, e.ElevID)
+			orders.BroadcastOrderAndState(new_order, e)
+
+			
 
 			//txChan := make(chan eio.ButtonEvent)
 			//rxChan := make(chan string)
-			go nw.Transmitter(20018, txBtnChan)
-			go nw.Receiver(20023, rxBtnChan)
+			
 
     
-            txBtnChan <- btn
+            
             //time.Sleep(2*time.Second)
         
     
