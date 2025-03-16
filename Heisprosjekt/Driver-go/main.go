@@ -7,12 +7,12 @@ import (
 	eio "Driver-go/elevio"
 	fsm "Driver-go/fsm"
 
-	// "Driver-go/orders"
+	"Driver-go/orders"
 
 	//"time"
 
 	//"time"
-	//nw "Driver-go/network/bcast"
+	nw "Driver-go/network/bcast"
 	"fmt"
 )
 
@@ -72,8 +72,6 @@ func main() {
 
     
 
-<<<<<<< HEAD
-=======
 
     txBtnChan := make(chan eio.ButtonEvent)
     rxBtnChan := make(chan eio.ButtonEvent)
@@ -99,7 +97,6 @@ func main() {
 
     }()
 
->>>>>>> 94233afcadf8c25fa185ce00f97232eb4ad5a018
     
     
 

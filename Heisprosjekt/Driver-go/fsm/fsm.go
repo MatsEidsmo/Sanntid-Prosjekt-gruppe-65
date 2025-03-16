@@ -67,16 +67,7 @@ func Run(e *ec.Elevator, pushed_btn chan eio.ButtonEvent, obstr_chann chan bool,
 		case <- ea.DoorTimer.C:
 			
 			ea.Upon_Door_Timeout(e)
-			// curr_dir := el.Choose_Dir(e)
-			// eio.SetDoorOpenLamp(false)
-			// el.Clear_Floor_Requests(e)
-			// if curr_dir == eio.MD_Stop {
-			// 	e.Behaviour = ec.EB_Idle
-			// } else {
-			// 	e.Behaviour = ec.EB_Moving
-			// }
-
-			// eio.SetMotorDirection(curr_dir)
+			
 			
 
 		case obstr := <- obstr_chann:
