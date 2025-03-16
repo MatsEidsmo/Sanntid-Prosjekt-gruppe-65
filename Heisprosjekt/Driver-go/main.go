@@ -42,7 +42,8 @@ func Initialize_Elev_Pos(e *ec.Elevator, drv_floors chan int) {
 
 func main() {
     numFloors := 4
-
+   
+    
     var e ec.Elevator
     var e2 ec.Elevator
     var e3 ec.Elevator
@@ -58,6 +59,8 @@ func main() {
     ea.Timer_init()
 
     Initialize_Elev_Pos(&e, drv_floors)
+    ec.DefaultElev(&e2)
+    ec.DefaultElev(&e3)
 
 	drv_buttons := make(chan eio.ButtonEvent)
 	drv_obstr := make(chan bool)

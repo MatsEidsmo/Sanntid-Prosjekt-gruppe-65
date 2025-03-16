@@ -26,3 +26,11 @@ type Elevator struct {
 	Obstruction 	bool
 	ElevID			string
 }
+
+
+
+func DefaultElev(e *Elevator) {
+	e.Floor 	= 		0
+	e.Behaviour = EB_Idle
+	
+}

@@ -61,19 +61,32 @@ func NewOrder(btn_event eio.ButtonEvent, elevID string) Order {
 	return o
 }
 
-func AssignOrderToElevator(o *Order, e1 ec.Elevator, e2 ec.Elevator, e3 ec.Elevator) {
+func AssignOrderToElevator(o *Order, e1 *ec.Elevator, e2 *ec.Elevator, e3 *ec.Elevator) {
 	if o.OrderType == eio.BT_Cab {
-		o.OrderState = ASSIGNED
 		o.AssignedElevator = o.OriginElevator
+		o.OrderState = ASSIGNED
 		return
 	}
+	time1 := TimeToIdle(e1)
+	time2 := TimeToIdle(e2)
+	time3 := TimeToIdle(e3)
+	if time1 <= time2 {
+		if time1 <= time3 {
+			o.AssignedElevator = e1.ElevID
+		}else{
+			o.AssignedElevator = e3.ElevID
+		}
+	}else{
+		if time2 <= time3
+	}
+	
 
 
 }
 
-func TimeToIdle(e *ec.Elevator) int {
-	duration := 0
-	rm_copy := e.RequestMatrix
+func TimeToIdle(e *ec.Elevator) (duration int) {
+	duration = 0
+	e_copy := e
 	switch e.Behaviour {
 	case ec.EB_Idle:
 		return duration
@@ -90,7 +103,7 @@ func TimeToIdle(e *ec.Elevator) int {
 			e.Dir = el.Choose_Dir(e)
 			el.Clear_Floor_Requests(e)
 			if e.Dir == eio.MD_Stop {
-				e.RequestMatrix = rm_copy;
+				e = e_copy;
 				return duration
 			}
 		}
@@ -105,8 +118,8 @@ func BroadcastOrderAndState(new_order Order, e *ec.Elevator)  {
 	txElevChan := make(chan *ec.Elevator)
 	
 
-	go nw.Transmitter(20018, txOrderChan)
-	go nw.Transmitter(20018, txElevChan)
+	go nw.Transmitter(20024, txOrderChan)
+	go nw.Transmitter(20024, txElevChan)
 	
 
 	txOrderChan <- new_order
