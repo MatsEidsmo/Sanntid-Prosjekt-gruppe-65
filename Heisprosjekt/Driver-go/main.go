@@ -80,6 +80,7 @@ func main() {
     go orders.RecieveOrderAndState(&e2, &e3)
     
     
+    
 
 
     defer fsm.Run(&e, drv_buttons, drv_obstr, drv_floors)

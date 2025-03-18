@@ -19,6 +19,7 @@ func Run(e *ec.Elevator, pushed_btn chan eio.ButtonEvent, obstr_chann chan bool,
 
 			new_order := orders.NewOrder(btn, e.ElevID)
 			orders.BroadcastOrderAndState(new_order, e)
+			
 
 			
 

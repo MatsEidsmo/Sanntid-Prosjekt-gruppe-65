@@ -2,15 +2,15 @@ package orders
 
 import (
 	//ea "Driver-go/elev_actuator"
-	eio "Driver-go/elevio"
 	ec "Driver-go/elev_config"
 	el "Driver-go/elev_logic"
-// 	fsm "Driver-go/fsm"
+	eio "Driver-go/elevio"
+	"Driver-go/orders"
+
+	// 	fsm "Driver-go/fsm"
 	//"time"
 
-
 	nw "Driver-go/network/bcast"
-
 )
 
 type OrderState int
@@ -73,11 +73,11 @@ func AssignOrderToElevator(o *Order, e1 *ec.Elevator, e2 *ec.Elevator, e3 *ec.El
 	if time1 <= time2 {
 		if time1 <= time3 {
 			o.AssignedElevator = e1.ElevID
-		}else{
-			o.AssignedElevator = e3.ElevID
 		}
-	}else{
-		if time2 <= time3
+	}else if time2 <= time3{
+		o.AssignedElevator = e2.ElevID
+	}else {
+		o.AssignedElevator = e3.ElevID
 	}
 	
 
@@ -140,6 +140,11 @@ func RecieveOrderAndState(e2 *ec.Elevator, e3 *ec.Elevator)  {
 		select{
 		case new_order := <-rxOrderChan:
 			MyWorldView = append(MyWorldView, &new_order)
+
+			// Wait for confirmation on worldview here
+
+			
+
 
 		case state_update := <- rxElevChan:
 			if state_update.ElevID == e2.ElevID{
