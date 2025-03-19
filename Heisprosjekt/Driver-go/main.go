@@ -15,6 +15,9 @@ import (
 	ip "Driver-go/network/localip"
 	//"fmt"
 	"time"
+	"os"
+	"flag"
+	"strconv"
 )
 
 
@@ -50,10 +53,31 @@ func Initialize_Elev(e *ec.Elevator, drv_floors chan int) {
 }
 
 func main() {
+
+	var id string
+	flag.StringVar(&id, "id", "", "id of this peer")
+	flag.Parse()
+	
+	if id == "" {
+		localIP, err := ip.LocalIP()
+		if err != nil {
+			fmt.Println(err)
+			localIP = "DISCONNECTED"
+		}
+		id = fmt.Sprintf("peer-%s-%d", localIP, os.Getpid())
+	}
+	
+	port := 15657
+	id_int, _ := strconv.Atoi(id)
+	
+	elev := elevator.InitElev(id)
+	e := &elev
+	elevio.Init("localhost:"+strconv.Itoa(port+id_int), utilities.NUM_FLOORS)
+	PeerList := make([]string, 0)
     numFloors := 4
    
     
-    var e ec.Elevator
+    //var e ec.Elevator
     
     
     eio.Init("localhost:15657", numFloors)
