@@ -9,9 +9,9 @@ import (
 	bcast "Driver-go/network/bcast"
 	hb "Driver-go/network/heartbeat"
 
-	// "fmt"
+	"fmt"
 
-	// ip "Driver-go/network/localip"
+	ip "Driver-go/network/localip"
 	
 	"time"
 	"os"
@@ -38,7 +38,7 @@ func Initialize_Elev(e *ec.Elevator, drv_floors chan int) {
     el.Clear_RequestMatrix(e)
     
     e.Behaviour = ec.EB_Idle
-    e.ElevID = "Elevator1"
+    //e.ElevID = "Elevator1"
     
     
 
@@ -64,10 +64,10 @@ func main() {
 	port := 15657
 	id_int, _ := strconv.Atoi(id)
 	
-	elev := elevator.InitElev(id)
+	elev := ec.InitElev(id)
 	e := &elev
-	elevio.Init("localhost:"+strconv.Itoa(port+id_int), utilities.NUM_FLOORS)
-	PeerList := make([]string, 0)
+	eio.Init("localhost:"+strconv.Itoa(port+id_int), ec.N_floors)
+	//PeerList := make([]string, 0)
     numFloors := 4
    
     
@@ -101,14 +101,14 @@ func main() {
 	
 	
 
-	go hb.Transmitter(e, txChan)
+	go hb.Transmitter(*e, txChan)
 	go hb.Receiver(rxChan, activeElevators)
 	go hb.RemoveInactiveElevators(activeElevators, 4*time.Second)
     
     
-    Initialize_Elev(&e, drv_floors)
+    Initialize_Elev(e, drv_floors)
 
 
-    defer fsm.Run(&e, drv_buttons, drv_obstr, drv_floors, activeElevators)
+    defer fsm.Run(e, drv_buttons, drv_obstr, drv_floors, activeElevators)
 
 }

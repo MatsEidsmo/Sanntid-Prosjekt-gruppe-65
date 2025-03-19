@@ -21,7 +21,7 @@ const (
 type Elevator struct {
 	Floor 			int
 	Dir 			eio.MotorDirection 
-	RequestMatrix 	[N_floors][N_buttons] int
+	RequestMatrix 	[][] int
 	Behaviour 		ElevatorBehavior
 	Obstruction 	bool
 	ElevID			string
@@ -29,8 +29,20 @@ type Elevator struct {
 
 
 
-func DefaultElev(e *Elevator) {
-	e.Floor 	= 		0
-	e.Behaviour = EB_Idle
+func InitElev(id string) Elevator{
+	rm := make([][] int, 0)
+	for floor := 0; floor < N_floors; floor++ {
+		rm = append(rm, make([]int, N_buttons))
+		for btn := range rm[floor]{
+			rm[floor][btn] = 0
+		}
+	}
+	return Elevator{
+		Floor: 			0,
+		Dir:        	eio.MD_Stop,
+		RequestMatrix:  rm,
+
+	}
+
 	
 }
