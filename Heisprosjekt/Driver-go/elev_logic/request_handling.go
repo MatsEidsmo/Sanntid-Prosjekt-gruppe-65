@@ -43,13 +43,15 @@ func Add_Request(e *ec.Elevator, floor int, btnType eio.ButtonType) {
 	
 }
 
-func Clear_Floor_Requests(e *ec.Elevator) {
+func Clear_Floor_Requests(e *ec.Elevator, usedInTimeToIdle bool) {
 	for btn := 0; btn < ec.N_buttons; btn++{
 		e.RequestMatrix[e.Floor][btn] = 0
 	}
-	eio.SetButtonLamp(eio.BT_HallUp, e.Floor, false)
-	eio.SetButtonLamp(eio.BT_HallDown, e.Floor, false)
-	eio.SetButtonLamp(eio.BT_Cab, e.Floor, false)
+	if !usedInTimeToIdle {
+		eio.SetButtonLamp(eio.BT_HallUp, e.Floor, false)
+		eio.SetButtonLamp(eio.BT_HallDown, e.Floor, false)
+		eio.SetButtonLamp(eio.BT_Cab, e.Floor, false)
+	}
 }
 
 func Choose_Dir(e *ec.Elevator) eio.MotorDirection {

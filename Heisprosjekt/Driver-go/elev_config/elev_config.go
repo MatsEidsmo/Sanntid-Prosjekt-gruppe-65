@@ -20,7 +20,7 @@ const (
 
 type Elevator struct {
 	Floor 			int
-	Dir 			eio.MotorDirection // except MD_Stop
+	Dir 			eio.MotorDirection 
 	RequestMatrix 	[N_floors][N_buttons] int
 	Behaviour 		ElevatorBehavior
 	Obstruction 	bool
