@@ -68,10 +68,16 @@ func AssignOrderToElevator(o *Order, active_elevs map[string]hb.Heartbeat) {
 		o.OrderState = ASSIGNED
 		return
 	}
+	
+	
 	var min_tti int
 	var min_ElevID string
+	fmt.Println(active_elevs)
 	for id, hb := range active_elevs{
+		
+		fmt.Println("Hey")
 		curr_tti := TimeToIdle(&hb.Elevator)
+		fmt.Println("TTI calculated")
 		if curr_tti == 0 {
 			o.AssignedElevator = id
 			o.OrderState = ASSIGNED
@@ -107,20 +113,31 @@ func TimeToIdle(e *ec.Elevator) (duration int) {
 	e_floor_copy := e.Floor
 	e_dir_copy := e.Dir
 	e_rm_copy := e.RequestMatrix
-
-
+	fmt.Println("Floor:", e.Floor, "Dir:", e.Dir)
+	// e.Dir = 1
+	// e.Floor = 1
 	switch e.Behaviour {
 	case ec.EB_Idle:
 		return duration
 	case ec.EB_DoorOpen:
+		fmt.Println("Door open")
 		duration += int(ec.DOOR_TIMEOUT/2)
 	case ec.EB_Moving:
+		fmt.Println("Moving!")
 		duration += int(ec.TRAVEL_TIME/2)
 		e.Floor += int(e.Dir)
 	}
+	fmt.Println("Floor:", e.Floor, "Dir:", e.Dir)
+	fmt.Println(e.RequestMatrix[3][0], e.RequestMatrix[3][1], e.RequestMatrix[3][2])
+	fmt.Println(e.RequestMatrix[2][0], e.RequestMatrix[2][1], e.RequestMatrix[2][2])
+	fmt.Println(e.RequestMatrix[1][0], e.RequestMatrix[1][1], e.RequestMatrix[1][2])
+	fmt.Println(e.RequestMatrix[0][0], e.RequestMatrix[0][1], e.RequestMatrix[0][2])
 
+	
 	for {
- 		if el.Stop_Here(e) {
+		
+		if el.Stop_Here(e) {
+			fmt.Println("Should stop here")
 			duration += int(ec.DOOR_TIMEOUT)
 			e.Dir = el.Choose_Dir(e)
 			el.Clear_Floor_Requests(e, true)
@@ -134,6 +151,7 @@ func TimeToIdle(e *ec.Elevator) (duration int) {
 		}
 		e.Floor += int(e.Dir)
 		duration += int(ec.TRAVEL_TIME)
+		//fmt.Println(e.Floor)
 	}
 }
 
@@ -143,8 +161,8 @@ func BroadcastOrderAndState(new_order Order, e *ec.Elevator)  {
 	txElevChan := make(chan *ec.Elevator)
 	
 
-	go nw.Transmitter(20024, txOrderChan)
-	go nw.Transmitter(20024, txElevChan)
+	go nw.Transmitter(20023, txOrderChan)
+	go nw.Transmitter(20023, txElevChan)
 	
 
 	txOrderChan <- new_order

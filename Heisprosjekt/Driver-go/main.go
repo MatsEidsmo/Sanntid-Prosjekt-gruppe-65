@@ -8,12 +8,11 @@ import (
 	fsm "Driver-go/fsm"
 	bcast "Driver-go/network/bcast"
 	hb "Driver-go/network/heartbeat"
-	"fmt"
 
-	//"fmt"
+	// "fmt"
 
-	ip "Driver-go/network/localip"
-	//"fmt"
+	// ip "Driver-go/network/localip"
+	
 	"time"
 )
 
@@ -36,12 +35,7 @@ func Initialize_Elev(e *ec.Elevator, drv_floors chan int) {
     el.Clear_RequestMatrix(e)
     
     e.Behaviour = ec.EB_Idle
-    var err error
-    e.ElevID, err = ip.LocalIP()
-    if err != nil {
-        fmt.Println("Error fetching local IP:", err)
-        
-    }
+    e.ElevID = "Elevator1"
     
     
 

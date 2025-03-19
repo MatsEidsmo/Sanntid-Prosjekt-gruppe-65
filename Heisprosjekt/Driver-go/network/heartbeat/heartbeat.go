@@ -14,7 +14,7 @@ type Heartbeat struct {
 func Transmitter(elevator ec.Elevator, txChan chan Heartbeat) {
 	for {
 		txChan <- Heartbeat{Elevator: elevator, Timestamp: time.Now()}
-		time.Sleep(1000 * time.Millisecond) 
+		time.Sleep(500 * time.Millisecond) 
 		
 	}
 }
@@ -23,7 +23,7 @@ func Receiver(rxChan chan Heartbeat, activeElevators map[string]Heartbeat) {
 	for {
 		heartbeat := <-rxChan
 		activeElevators[heartbeat.Elevator.ElevID] = heartbeat
-		//fmt.Println("Recieved Heartbeat:)")
+		//fmt.Println("Recieved Heartbeat from:", string(heartbeat.Elevator.ElevID))
 	}
 }
 

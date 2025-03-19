@@ -18,11 +18,19 @@ func Run(e *ec.Elevator, pushed_btn chan eio.ButtonEvent, obstr_chann chan bool,
 		case btn := <- pushed_btn:
 			fmt.Println("Button recieved!")
 
+			el.Add_Request(e, btn.Floor, btn.Button)
+
+			fmt.Println(e.RequestMatrix[3][0], e.RequestMatrix[3][1], e.RequestMatrix[3][2])
+			fmt.Println(e.RequestMatrix[2][0], e.RequestMatrix[2][1], e.RequestMatrix[2][2])
+			fmt.Println(e.RequestMatrix[1][0], e.RequestMatrix[1][1], e.RequestMatrix[1][2])
+			fmt.Println(e.RequestMatrix[0][0], e.RequestMatrix[0][1], e.RequestMatrix[0][2])
+
 			new_order := orders.NewOrder(btn, e.ElevID)
 			orders.BroadcastOrderAndState(new_order, e)
 			
-
+			fmt.Println("Before ATE")
 			orders.AssignOrderToElevator(&new_order, active_elevs)
+			fmt.Println("Assigned to Elevator")
 
 			//txChan := make(chan eio.ButtonEvent)
 			//rxChan := make(chan string)
@@ -45,7 +53,7 @@ func Run(e *ec.Elevator, pushed_btn chan eio.ButtonEvent, obstr_chann chan bool,
 			// if Heis som skal kjøre == denne heisen
 			if e.ElevID == new_order.AssignedElevator {
 
-				el.Add_Request(e, btn.Floor, btn.Button)
+				
 				
 					curr_dir := el.Choose_Dir(e)
 					if btn.Floor == e.Floor && e.Behaviour != ec.EB_Moving{
@@ -54,7 +62,7 @@ func Run(e *ec.Elevator, pushed_btn chan eio.ButtonEvent, obstr_chann chan bool,
 					if e.Behaviour != 0 {
 						eio.SetMotorDirection(curr_dir)
 					}
-			}
+			} 
 
 				
 			
