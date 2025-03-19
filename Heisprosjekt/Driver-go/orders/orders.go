@@ -5,12 +5,13 @@ import (
 	ec "Driver-go/elev_config"
 	el "Driver-go/elev_logic"
 	eio "Driver-go/elevio"
-	"Driver-go/orders"
+	"fmt"
 
 	// 	fsm "Driver-go/fsm"
 	//"time"
 
 	nw "Driver-go/network/bcast"
+	hb "Driver-go/network/heartbeat"
 )
 
 type OrderState int
@@ -61,24 +62,41 @@ func NewOrder(btn_event eio.ButtonEvent, elevID string) Order {
 	return o
 }
 
-func AssignOrderToElevator(o *Order, e1 *ec.Elevator, e2 *ec.Elevator, e3 *ec.Elevator) {
+func AssignOrderToElevator(o *Order, active_elevs map[string]hb.Heartbeat) {
 	if o.OrderType == eio.BT_Cab {
 		o.AssignedElevator = o.OriginElevator
 		o.OrderState = ASSIGNED
 		return
 	}
-	time1 := TimeToIdle(e1)
-	time2 := TimeToIdle(e2)
-	time3 := TimeToIdle(e3)
-	if time1 <= time2 {
-		if time1 <= time3 {
-			o.AssignedElevator = e1.ElevID
+	var min_tti int
+	var min_ElevID string
+	for id, hb := range active_elevs{
+		curr_tti := TimeToIdle(&hb.Elevator)
+		if curr_tti == 0 {
+			o.AssignedElevator = id
+			o.OrderState = ASSIGNED
+			return
 		}
-	}else if time2 <= time3{
-		o.AssignedElevator = e2.ElevID
-	}else {
-		o.AssignedElevator = e3.ElevID
+		if curr_tti < min_tti {
+			min_tti = curr_tti
+			min_ElevID = id
+		}
 	}
+	o.AssignedElevator = min_ElevID
+	o.OrderState = ASSIGNED
+
+	// time1 := TimeToIdle(e1)
+	// time2 := TimeToIdle(e2)
+	// time3 := TimeToIdle(e3)
+	// if time1 <= time2 {
+	// 	if time1 <= time3 {
+	// 		o.AssignedElevator = e1.ElevID
+	// 	}
+	// }else if time2 <= time3{
+	// 	o.AssignedElevator = e2.ElevID
+	// }else {
+	// 	o.AssignedElevator = e3.ElevID
+	// }
 	
 
 
@@ -86,7 +104,11 @@ func AssignOrderToElevator(o *Order, e1 *ec.Elevator, e2 *ec.Elevator, e3 *ec.El
 
 func TimeToIdle(e *ec.Elevator) (duration int) {
 	duration = 0
-	e_copy := e
+	e_floor_copy := e.Floor
+	e_dir_copy := e.Dir
+	e_rm_copy := e.RequestMatrix
+
+
 	switch e.Behaviour {
 	case ec.EB_Idle:
 		return duration
@@ -101,9 +123,12 @@ func TimeToIdle(e *ec.Elevator) (duration int) {
  		if el.Stop_Here(e) {
 			duration += int(ec.DOOR_TIMEOUT)
 			e.Dir = el.Choose_Dir(e)
-			el.Clear_Floor_Requests(e)
+			el.Clear_Floor_Requests(e, true)
 			if e.Dir == eio.MD_Stop {
-				e = e_copy;
+				e.Floor = e_floor_copy
+				e.Dir = e_dir_copy
+				e.RequestMatrix = e_rm_copy
+				fmt.Println("Duration:", duration)
 				return duration
 			}
 		}
