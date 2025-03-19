@@ -1,18 +1,17 @@
 package heartbeat
 
 import (
-	"Driver-go/network/bcast"
-	"Driver-go/elev_config"
+	ec "Driver-go/elev_config"
 	"fmt"
 	"time"
 )
 
 type Heartbeat struct {
-	Elevator  elev_config.Elevator
+	Elevator  ec.Elevator
 	Timestamp time.Time
 }
 
-func Transmitter(elevator elev_config.Elevator, txChan chan Heartbeat) {
+func Transmitter(elevator ec.Elevator, txChan chan Heartbeat) {
 	for {
 		txChan <- Heartbeat{Elevator: elevator, Timestamp: time.Now()}
 		time.Sleep(500 * time.Millisecond) // Send heartbeat every 500ms

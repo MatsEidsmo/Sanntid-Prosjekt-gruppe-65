@@ -6,14 +6,10 @@ import (
 	el "Driver-go/elev_logic"
 	eio "Driver-go/elevio"
 	fsm "Driver-go/fsm"
-
-	"Driver-go/orders"
-
-	//"time"
-
-	//"time"
-	//nw "Driver-go/network/bcast"
+    hb "Driver-go/network/heartbeat"
+	bcast "Driver-go/network/bcast"
 	"fmt"
+    "time"
 )
 
 
@@ -45,6 +41,7 @@ func main() {
    
     
     var e ec.Elevator
+    e.ElevID = "elevator_1"
     var e2 ec.Elevator
     var e3 ec.Elevator
 
@@ -77,7 +74,19 @@ func main() {
 
 
     
-    go orders.RecieveOrderAndState(&e2, &e3)
+    txChan := make(chan hb.Heartbeat)
+	rxChan := make(chan hb.Heartbeat)
+	activeElevators := make(map[string]hb.Heartbeat)
+
+	go bcast.Transmitter(20023, txChan)
+	go bcast.Receiver(20023, rxChan)
+
+	
+	
+
+	go hb.Transmitter(e, txChan)
+	go hb.Receiver(rxChan, activeElevators)
+	go hb.RemoveInactiveElevators(activeElevators, 2*time.Second)
     
     
     
