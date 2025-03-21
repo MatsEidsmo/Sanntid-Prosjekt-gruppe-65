@@ -41,7 +41,7 @@ func InitElev(id string) Elevator{
 		Floor: 			0,
 		Dir:        	eio.MD_Stop,
 		RequestMatrix:  rm,
-
+		ElevID: 		id,	
 	}
 
 	

@@ -8,15 +8,19 @@ import (
 	fsm "Driver-go/fsm"
 	bcast "Driver-go/network/bcast"
 	hb "Driver-go/network/heartbeat"
+	so "Driver-go/network/sendorders"
+	"Driver-go/orders"
+
+	//"Driver-go/orders"
 
 	"fmt"
 
 	ip "Driver-go/network/localip"
-	
-	"time"
-	"os"
+
 	"flag"
+	"os"
 	"strconv"
+	"time"
 )
 
 
@@ -68,13 +72,13 @@ func main() {
 	e := &elev
 	eio.Init("localhost:"+strconv.Itoa(port+id_int), ec.N_floors)
 	//PeerList := make([]string, 0)
-    numFloors := 4
+    //numFloors := 4
    
     
     //var e ec.Elevator
     
     
-    eio.Init("localhost:15657", numFloors)
+    //eio.Init("localhost:15657", numFloors)
 
 	var d eio.MotorDirection = eio.MD_Down
 	eio.SetMotorDirection(d)
@@ -91,22 +95,27 @@ func main() {
 
 
     
-    txChan := make(chan hb.Heartbeat)
-	rxChan := make(chan hb.Heartbeat)
+    txhbChan := make(chan hb.Heartbeat)
+	rxhbChan := make(chan hb.Heartbeat)
 	activeElevators := make(map[string]hb.Heartbeat)
+	rxOrderlistChan := make(chan orders.OrderList)
 
-	go bcast.Transmitter(20023, txChan)
-	go bcast.Receiver(20023, rxChan)
+	go bcast.Transmitter(20023, txhbChan)
+	go bcast.Receiver(20023, rxhbChan)
 
 	
 	
 
-	go hb.Transmitter(*e, txChan)
-	go hb.Receiver(rxChan, activeElevators)
+	go hb.Transmitter(*e, txhbChan)
+	go hb.Receiver(rxhbChan, activeElevators)
 	go hb.RemoveInactiveElevators(activeElevators, 4*time.Second)
+	go so.RecieveOrderList(rxOrderlistChan)
     
-    
+
+
     Initialize_Elev(e, drv_floors)
+
+	orders.HandleButtonInput(e, drv_buttons)
 
 
     defer fsm.Run(e, drv_buttons, drv_obstr, drv_floors, activeElevators)

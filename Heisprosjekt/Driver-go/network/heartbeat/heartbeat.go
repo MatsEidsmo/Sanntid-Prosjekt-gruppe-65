@@ -4,6 +4,10 @@ import (
 	ec "Driver-go/elev_config"
 	"fmt"
 	"time"
+	//"Driver-go/orders"
+	// eio "Driver-go/elevio"
+	// bcast "Driver-go/network/bcast"
+	// counter "Driver-go/network/counter"
 )
 
 type Heartbeat struct {
@@ -14,7 +18,8 @@ type Heartbeat struct {
 func Transmitter(elevator ec.Elevator, txChan chan Heartbeat) {
 	for {
 		txChan <- Heartbeat{Elevator: elevator, Timestamp: time.Now()}
-		time.Sleep(500 * time.Millisecond) 
+		time.Sleep(2000 * time.Millisecond) 
+		
 		
 	}
 }
@@ -24,6 +29,8 @@ func Receiver(rxChan chan Heartbeat, activeElevators map[string]Heartbeat) {
 		heartbeat := <-rxChan
 		activeElevators[heartbeat.Elevator.ElevID] = heartbeat
 		//fmt.Println("Recieved Heartbeat from:", string(heartbeat.Elevator.ElevID))
+		//fmt.Println(activeElevators)
+		//fmt.Println(len(activeElevators))
 	}
 }
 
@@ -39,3 +46,9 @@ func RemoveInactiveElevators(activeElevators map[string]Heartbeat, timeout time.
 		}
 	}
 }
+
+
+
+
+
+

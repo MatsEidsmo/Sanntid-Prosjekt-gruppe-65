@@ -6,9 +6,10 @@ import (
 	el "Driver-go/elev_logic"
 	eio "Driver-go/elevio"
 	hb "Driver-go/network/heartbeat"
-	//nw "Driver-go/network/bcast"
+	//bcast "Driver-go/network/bcast"
 	orders "Driver-go/orders"
 	"fmt"
+	//"time"
 )
 
 func Run(e *ec.Elevator, pushed_btn chan eio.ButtonEvent, obstr_chann chan bool, floor_sensor chan int, active_elevs map[string]hb.Heartbeat) {
@@ -20,16 +21,15 @@ func Run(e *ec.Elevator, pushed_btn chan eio.ButtonEvent, obstr_chann chan bool,
 
 			el.Add_Request(e, btn.Floor, btn.Button)
 
-			fmt.Println(e.RequestMatrix[3][0], e.RequestMatrix[3][1], e.RequestMatrix[3][2])
-			fmt.Println(e.RequestMatrix[2][0], e.RequestMatrix[2][1], e.RequestMatrix[2][2])
-			fmt.Println(e.RequestMatrix[1][0], e.RequestMatrix[1][1], e.RequestMatrix[1][2])
-			fmt.Println(e.RequestMatrix[0][0], e.RequestMatrix[0][1], e.RequestMatrix[0][2])
+			
 
 			new_order := orders.NewOrder(btn, e.ElevID)
-			orders.BroadcastOrderAndState(new_order, e)
+			
+
 			
 			fmt.Println("Before ATE")
 			orders.AssignOrderToElevator(&new_order, active_elevs)
+			
 			fmt.Println("Assigned to Elevator")
 
 			//txChan := make(chan eio.ButtonEvent)
@@ -68,11 +68,11 @@ func Run(e *ec.Elevator, pushed_btn chan eio.ButtonEvent, obstr_chann chan bool,
 			
 		case floor := <- floor_sensor:
 			eio.SetFloorIndicator(floor)
-			fmt.Println("Floor: " , floor)
-			fmt.Println("Dir: " , e.Dir)
+			// fmt.Println("Floor: " , floor)
+			// fmt.Println("Dir: " , e.Dir)
 			e.Floor = floor
 			if el.Stop_Here(e) {
-				fmt.Println("Elevator stopping")
+				// fmt.Println("Elevator stopping")
 				ea.Open_Door(e)
 				e.Behaviour = ec.EB_DoorOpen
 				

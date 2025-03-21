@@ -41,7 +41,7 @@ func Open_Door(e *ec.Elevator) {
 }
 
 func Upon_Door_Timeout(e *ec.Elevator) {
-	fmt.Println("doortimeout")
+	//fmt.Println("doortimeout")
 
 	if e.Obstruction {
 		println("Obstruction true")

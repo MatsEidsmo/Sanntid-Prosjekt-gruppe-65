@@ -5,12 +5,14 @@ import (
 	ec "Driver-go/elev_config"
 	el "Driver-go/elev_logic"
 	eio "Driver-go/elevio"
+	//"container/list"
 	"fmt"
+	//"strings"
 
 	// 	fsm "Driver-go/fsm"
 	//"time"
 
-	nw "Driver-go/network/bcast"
+	bcast "Driver-go/network/bcast"
 	hb "Driver-go/network/heartbeat"
 )
 
@@ -41,6 +43,7 @@ type Order struct {
 	OriginElevator string
 	AssignedElevator string
 	OrderConfirmation OrderConfirmation
+	ElevsConfirmed []string
 
 }
 
@@ -55,6 +58,7 @@ func NewOrder(btn_event eio.ButtonEvent, elevID string) Order {
 		OrderFloor: 	btn_event.Floor,
 		OriginElevator: elevID,
 	}
+	o.ElevsConfirmed = append(o.ElevsConfirmed, o.OriginElevator)
 	if btn_event.Button == eio.BT_Cab {
 		o.OrderState = ASSIGNED
 		o.AssignedElevator = elevID
@@ -72,7 +76,6 @@ func AssignOrderToElevator(o *Order, active_elevs map[string]hb.Heartbeat) {
 	
 	var min_tti int
 	var min_ElevID string
-	fmt.Println(active_elevs)
 	for id, hb := range active_elevs{
 		
 		fmt.Println("Hey")
@@ -132,7 +135,7 @@ func TimeToIdle(e *ec.Elevator) (duration int) {
 	fmt.Println(e.RequestMatrix[2][0], e.RequestMatrix[2][1], e.RequestMatrix[2][2])
 	fmt.Println(e.RequestMatrix[1][0], e.RequestMatrix[1][1], e.RequestMatrix[1][2])
 	fmt.Println(e.RequestMatrix[0][0], e.RequestMatrix[0][1], e.RequestMatrix[0][2])
-
+	
 	
 	for {
 		
@@ -161,8 +164,8 @@ func BroadcastOrderAndState(new_order Order, e *ec.Elevator)  {
 	txElevChan := make(chan *ec.Elevator)
 	
 
-	go nw.Transmitter(20023, txOrderChan)
-	go nw.Transmitter(20023, txElevChan)
+	go bcast.Transmitter(20023, txOrderChan)
+	go bcast.Transmitter(20023, txElevChan)
 	
 
 	txOrderChan <- new_order
@@ -176,8 +179,8 @@ func RecieveOrderAndState(e2 *ec.Elevator, e3 *ec.Elevator)  {
 	rxElevChan := make(chan *ec.Elevator)
 	rxOrderChan := make(chan Order)
 
-	go nw.Receiver(20023, rxElevChan)
-	go nw.Receiver(20023, rxOrderChan)
+	go bcast.Receiver(20023, rxElevChan)
+	go bcast.Receiver(20023, rxOrderChan)
 
 	for{
 		select{
@@ -201,3 +204,6 @@ func RecieveOrderAndState(e2 *ec.Elevator, e3 *ec.Elevator)  {
 	}
 	
 }
+
+
+
