@@ -5,10 +5,11 @@ import (
 	 ec "Driver-go/elev_config"
 	// el "Driver-go/elev_logic"
 	 eio "Driver-go/elevio"
-	bcast "Driver-go/network/bcast"
+	//bcast "Driver-go/network/bcast"
 	hb "Driver-go/network/heartbeat"
 	orders "Driver-go/orders"
-	so "Driver-go/network/sendorders"
+	//so "Driver-go/network/sendorders"
+	"fmt"
 )
 
 func ConfirmedQueue(wholeOrderList orders.OrderList) (confirmedOrderList orders.OrderList) {
@@ -20,26 +21,32 @@ func ConfirmedQueue(wholeOrderList orders.OrderList) (confirmedOrderList orders.
 	return confirmedOrderList
 }
 
-func HandleButtonInput( e *ec.Elevator, pushed_btn chan eio.ButtonEvent, activeElevators map[string]hb.Heartbeat) (Assigned_btn chan eio.ButtonEvent) {
+func HandleButtonInput( e *ec.Elevator, pushed_btn chan eio.ButtonEvent, activeElevators map[string]hb.Heartbeat, recieved_info chan orders.OrderList) {
 	
-	RecieveWorldviewChan := make(chan orders.OrderList)
-	go so.RecieveOrder(RecieveWorldviewChan)
+	TransmitWorldviewChan := make(chan orders.OrderList)
+	//RecieveWorldviewChan := make(chan orders.OrderList)
+	
 
 	for {
 		select{
 		case btn := <- pushed_btn:
+			fmt.Println("Inside Button pushed")
 			o := orders.NewOrder(btn, e.ElevID)
 			orders.MyWorldView = append(orders.MyWorldView, &o)
-			BroadcastWorldview(orders.MyWorldView)
+			BroadcastWorldview(orders.MyWorldView, TransmitWorldviewChan)
+			fmt.Println("End of Button pushed")
 
 
-		case wv_update := <- RecieveWorldviewChan:
+
+		case wv_update := <- recieved_info:
+			fmt.Println("Inside Recieved Worldview")
+
 			for _, o := range wv_update{
 				if o.OrderConfirmation ==  orders.UNCONFIRMED {
 
 					if len(o.ElevsConfirmed) == len(activeElevators) {
 						o.OrderConfirmation = orders.CONFIRMED
-						BroadcastWorldview(wv_update)
+						BroadcastWorldview(wv_update, TransmitWorldviewChan)
 	
 					} else {
 						elev_confirmed := false
@@ -50,17 +57,20 @@ func HandleButtonInput( e *ec.Elevator, pushed_btn chan eio.ButtonEvent, activeE
 						}
 						if !elev_confirmed {
 							o.ElevsConfirmed = append(o.ElevsConfirmed, e.ElevID)
-							BroadcastWorldview(wv_update)
+							BroadcastWorldview(wv_update, TransmitWorldviewChan)
 						}
 					}
 				}
 			}
+			fmt.Println("upsi")
 		}
 	}
-	return 
 }
 
-func BroadcastWorldview(WorldviewUpdate orders.OrderList) {
-	TransmitWorldviewChan := make(chan orders.OrderList)
-	TransmitWorldviewChan <- WorldviewUpdate
+func BroadcastWorldview(WorldviewUpdate orders.OrderList, transmitChan chan orders.OrderList) {
+	fmt.Println("Inside Broadcast Wv")
+
+	transmitChan <- WorldviewUpdate
+	fmt.Println("End of broadcast")
+
 }

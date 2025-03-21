@@ -10,6 +10,7 @@ import (
 	hb "Driver-go/network/heartbeat"
 	so "Driver-go/network/sendorders"
 	"Driver-go/orders"
+	counter "Driver-go/network/counter"
 
 	//"Driver-go/orders"
 
@@ -97,27 +98,32 @@ func main() {
     
     txhbChan := make(chan hb.Heartbeat)
 	rxhbChan := make(chan hb.Heartbeat)
-	activeElevators := make(map[string]hb.Heartbeat)
+	txOrderListChan := make(chan orders.OrderList)
 	rxOrderlistChan := make(chan orders.OrderList)
+	OrderlistChan := make(chan orders.OrderList)
+
+	activeElevators := make(map[string]hb.Heartbeat)
 
 	go bcast.Transmitter(20023, txhbChan)
 	go bcast.Receiver(20023, rxhbChan)
-
+	go bcast.Transmitter(20023, txOrderListChan)
+	go bcast.Receiver(20023, rxOrderlistChan)
 	
 	
 
 	go hb.Transmitter(*e, txhbChan)
 	go hb.Receiver(rxhbChan, activeElevators)
 	go hb.RemoveInactiveElevators(activeElevators, 4*time.Second)
-	go so.RecieveOrderList(rxOrderlistChan)
+	//go counter.BroadcastWorldview(orders.MyWorldView,txOrderListChan)
+	go so.RecieveOrderList(rxOrderlistChan, OrderlistChan)
     
-
+ 	test_channel := make(chan eio.ButtonEvent)
 
     Initialize_Elev(e, drv_floors)
 
-	orders.HandleButtonInput(e, drv_buttons)
+	go counter.HandleButtonInput(e, drv_buttons, activeElevators, OrderlistChan)
 
 
-    defer fsm.Run(e, drv_buttons, drv_obstr, drv_floors, activeElevators)
+    defer fsm.Run(e, test_channel, drv_obstr, drv_floors, activeElevators)
 
 }
