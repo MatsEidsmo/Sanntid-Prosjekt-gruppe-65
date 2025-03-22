@@ -25,6 +25,7 @@ type Elevator struct {
 	Behaviour 		ElevatorBehavior
 	Obstruction 	bool
 	ElevID			string
+	TimeToIdle 		int
 }
 
 
@@ -42,6 +43,7 @@ func InitElev(id string) Elevator{
 		Dir:        	eio.MD_Stop,
 		RequestMatrix:  rm,
 		ElevID: 		id,	
+		TimeToIdle: 	0,
 	}
 
 	

@@ -72,7 +72,7 @@ func AssignOrderToElevator(o *Order, active_elevs map[string]hb.Heartbeat) {
 	var min_ElevID string
 	for id, hb := range active_elevs {
 		
-		fmt.Println("Hey")
+		fmt.Println(active_elevs)
 		curr_tti := TimeToIdle(&hb.Elevator)
 		fmt.Println("TTI calculated")
 		if curr_tti == 0 {
@@ -115,7 +115,7 @@ func TimeToIdle(e *ec.Elevator) (duration int) {
 	// e.Floor = 1
 	switch e.Behaviour {
 	case ec.EB_Idle:
-		return duration
+		e.TimeToIdle = 0 // hdjpihk
 	case ec.EB_DoorOpen:
 		fmt.Println("Door open")
 		duration += int(ec.DOOR_TIMEOUT/2)

@@ -47,10 +47,10 @@ func RemoveInactiveElevators(activeElevators map[string]Heartbeat, timeout time.
 	}
 }
 
-// func UpdateActiveElevators() {
+// func UpdateActiveElevators(recieved_update chan *ec.Elevator, ) {
 // 	for {
 // 		select {
-		
+// 		case e := <-recieved_update :
 // 		}
 // 	}
 // }

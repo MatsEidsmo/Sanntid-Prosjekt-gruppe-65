@@ -12,17 +12,19 @@ import (
 	//"time"
 )
 
-func Run(e *ec.Elevator, pushed_btn chan eio.ButtonEvent, obstr_chann chan bool, floor_sensor chan int, active_elevs map[string]hb.Heartbeat) {
+func Run(e *ec.Elevator, pushed_btn chan eio.ButtonEvent, obstr_chann chan bool, floor_sensor chan int, active_elevs map[string]hb.Heartbeat, hb_chan chan hb.Heartbeat) {
 	
 	for {
 		select {
 		case btn := <- pushed_btn:
-			fmt.Println("Button recieved!")
-
 			
-
+			fmt.Println("Button recieved!")
+			
+			
+			
 			el.Add_Request(e, btn.Floor, btn.Button)
-
+			
+			go hb.Transmitter(*e, hb_chan)
 			
 
 			new_order := orders.NewOrder(btn, e.ElevID)

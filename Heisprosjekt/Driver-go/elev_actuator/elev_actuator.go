@@ -60,4 +60,5 @@ func Upon_Door_Timeout(e *ec.Elevator) {
 	}
 
 	eio.SetMotorDirection(curr_dir)
+	//Transmit(e)
 }

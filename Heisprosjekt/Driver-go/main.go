@@ -116,6 +116,7 @@ func main() {
 	go hb.Transmitter(*e, txhbChan)
 	go hb.Receiver(rxhbChan, activeElevators)
 	go hb.RemoveInactiveElevators(activeElevators, 4*time.Second)
+	//go hb.UpdateActiveElevators()
 	//go counter.BroadcastWorldview(orders.MyWorldView,txOrderListChan)
 	// go func() {
 	// 	for recievedWorldview := range RecieveWorldviewChan {
@@ -129,9 +130,9 @@ func main() {
 
     Initialize_Elev(e, drv_floors)
 
-	go counter.HandleButtonInput(e, drv_buttons, activeElevators, RecieveWorldviewChan, TransmitWorldviewChan)
+	go counter.HandleButtonInput(e, test_channel, activeElevators, RecieveWorldviewChan, TransmitWorldviewChan)
 
 
-    defer fsm.Run(e, test_channel, drv_obstr, drv_floors, activeElevators)
+    defer fsm.Run(e, drv_buttons, drv_obstr, drv_floors, activeElevators, txhbChan)
 
 }
