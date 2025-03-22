@@ -105,6 +105,8 @@ func AssignOrderToElevator(o *Order, active_elevs map[string]hb.Heartbeat) {
 
 }
 
+
+// Going to be changed to not return duration but change TimeToIdle member var of e
 func TimeToIdle(e *ec.Elevator) (duration int) {
 	duration = 0
 	e_floor_copy := e.Floor
@@ -115,7 +117,7 @@ func TimeToIdle(e *ec.Elevator) (duration int) {
 	// e.Floor = 1
 	switch e.Behaviour {
 	case ec.EB_Idle:
-		e.TimeToIdle = 0 // hdjpihk
+		return duration
 	case ec.EB_DoorOpen:
 		fmt.Println("Door open")
 		duration += int(ec.DOOR_TIMEOUT/2)
