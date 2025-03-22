@@ -5,27 +5,41 @@ import (
 	ec "Driver-go/elev_config"
 	el "Driver-go/elev_logic"
 	eio "Driver-go/elevio"
-	nw "Driver-go/network/bcast"
-	//orders "Driver-go/orders"
+	hb "Driver-go/network/heartbeat"
+	//bcast "Driver-go/network/bcast"
+	orders "Driver-go/orders"
 	"fmt"
+	//"time"
 )
 
-func Run(e *ec.Elevator, pushed_btn chan eio.ButtonEvent, obstr_chann chan bool, floor_sensor chan int) {
+func Run(e *ec.Elevator, pushed_btn chan eio.ButtonEvent, obstr_chann chan bool, floor_sensor chan int, active_elevs map[string]hb.Heartbeat) {
 	
 	for {
 		select {
 		case btn := <- pushed_btn:
+			fmt.Println("Button recieved!")
 
-			txBtnChan := make(chan eio.ButtonEvent)
-			rxBtnChan := make(chan eio.ButtonEvent)
+			
+
+			el.Add_Request(e, btn.Floor, btn.Button)
+
+			
+
+			new_order := orders.NewOrder(btn, e.ElevID)
+			
+
+			
+			fmt.Println("Before ATE")
+			orders.AssignOrderToElevator(&new_order, active_elevs)
+			
+			fmt.Println("Assigned to Elevator")
 
 			//txChan := make(chan eio.ButtonEvent)
 			//rxChan := make(chan string)
-			go nw.Transmitter(20018, txBtnChan)
-			go nw.Receiver(20023, rxBtnChan)
+			
 
     
-            txBtnChan <- btn
+            
             //time.Sleep(2*time.Second)
         
     
@@ -39,27 +53,28 @@ func Run(e *ec.Elevator, pushed_btn chan eio.ButtonEvent, obstr_chann chan bool,
 			//Vent på confirmation om btn
 			// Regn ut hvilken heis som skal kjøre
 			// if Heis som skal kjøre == denne heisen
+			if e.ElevID == new_order.AssignedElevator {
 
+				
+				
+					curr_dir := el.Choose_Dir(e)
+					if btn.Floor == e.Floor && e.Behaviour != ec.EB_Moving{
+						ea.Timer_start()
+					}
+					if e.Behaviour != 0 {
+						eio.SetMotorDirection(curr_dir)
+					}
+			} 
 
-			el.Add_Request(e, btn.Floor, btn.Button)
-			
-			
-				curr_dir := el.Choose_Dir(e)
-				if btn.Floor == e.Floor && e.Behaviour != ec.EB_Moving{
-					ea.Timer_start()
-				}
-				if e.Behaviour != 0 {
-					eio.SetMotorDirection(curr_dir)
-				}
 				
 			
 		case floor := <- floor_sensor:
 			eio.SetFloorIndicator(floor)
-			fmt.Println("Floor: " , floor)
-			fmt.Println("Dir: " , e.Dir)
+			// fmt.Println("Floor: " , floor)
+			// fmt.Println("Dir: " , e.Dir)
 			e.Floor = floor
 			if el.Stop_Here(e) {
-				fmt.Println("Elevator stopping")
+				// fmt.Println("Elevator stopping")
 				ea.Open_Door(e)
 				e.Behaviour = ec.EB_DoorOpen
 				
@@ -67,16 +82,7 @@ func Run(e *ec.Elevator, pushed_btn chan eio.ButtonEvent, obstr_chann chan bool,
 		case <- ea.DoorTimer.C:
 			
 			ea.Upon_Door_Timeout(e)
-			// curr_dir := el.Choose_Dir(e)
-			// eio.SetDoorOpenLamp(false)
-			// el.Clear_Floor_Requests(e)
-			// if curr_dir == eio.MD_Stop {
-			// 	e.Behaviour = ec.EB_Idle
-			// } else {
-			// 	e.Behaviour = ec.EB_Moving
-			// }
-
-			// eio.SetMotorDirection(curr_dir)
+			
 			
 
 		case obstr := <- obstr_chann:
