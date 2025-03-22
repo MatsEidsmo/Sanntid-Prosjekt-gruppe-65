@@ -2,10 +2,12 @@ package sendorders
 
 import (
 	orders "Driver-go/orders"
+	"fmt"
 )
 
-func RecieveOrderList(rxOrderChan chan orders.OrderList, OrderlistChan chan orders.OrderList) {
+func RecieveOrderList(rxOrderChan chan orders.OrderList) {
 	for {
-		OrderlistChan <- <-rxOrderChan
+		wv_recieved := <-rxOrderChan
+		fmt.Println("wv update recieved:", wv_recieved)
 	}
 }

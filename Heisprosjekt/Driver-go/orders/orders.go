@@ -67,16 +67,10 @@ func NewOrder(btn_event eio.ButtonEvent, elevID string) Order {
 }
 
 func AssignOrderToElevator(o *Order, active_elevs map[string]hb.Heartbeat) {
-	if o.OrderType == eio.BT_Cab {
-		o.AssignedElevator = o.OriginElevator
-		o.OrderState = ASSIGNED
-		return
-	}
-	
 	
 	var min_tti int
 	var min_ElevID string
-	for id, hb := range active_elevs{
+	for id, hb := range active_elevs {
 		
 		fmt.Println("Hey")
 		curr_tti := TimeToIdle(&hb.Elevator)

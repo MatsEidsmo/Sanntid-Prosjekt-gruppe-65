@@ -47,6 +47,13 @@ func RemoveInactiveElevators(activeElevators map[string]Heartbeat, timeout time.
 	}
 }
 
+// func UpdateActiveElevators() {
+// 	for {
+// 		select {
+		
+// 		}
+// 	}
+// }
 
 
 

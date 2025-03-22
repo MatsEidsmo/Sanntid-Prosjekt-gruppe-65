@@ -8,7 +8,7 @@ import (
 	fsm "Driver-go/fsm"
 	bcast "Driver-go/network/bcast"
 	hb "Driver-go/network/heartbeat"
-	so "Driver-go/network/sendorders"
+	//so "Driver-go/network/sendorders"
 	"Driver-go/orders"
 	counter "Driver-go/network/counter"
 
@@ -52,6 +52,7 @@ func Initialize_Elev(e *ec.Elevator, drv_floors chan int) {
 }
 
 func main() {
+	buff_size := 16*1024
 
 	var id string
 	flag.StringVar(&id, "id", "", "id of this peer")
@@ -98,16 +99,17 @@ func main() {
     
     txhbChan := make(chan hb.Heartbeat)
 	rxhbChan := make(chan hb.Heartbeat)
-	txOrderListChan := make(chan orders.OrderList)
-	rxOrderlistChan := make(chan orders.OrderList)
-	OrderlistChan := make(chan orders.OrderList)
+	
+	RecieveWorldviewChan := make(chan orders.OrderList, buff_size)
+	TransmitWorldviewChan := make(chan orders.OrderList, buff_size)
+	
 
 	activeElevators := make(map[string]hb.Heartbeat)
 
 	go bcast.Transmitter(20023, txhbChan)
 	go bcast.Receiver(20023, rxhbChan)
-	go bcast.Transmitter(20023, txOrderListChan)
-	go bcast.Receiver(20023, rxOrderlistChan)
+	go bcast.Transmitter(20023, TransmitWorldviewChan)
+	go bcast.Receiver(20023, RecieveWorldviewChan)
 	
 	
 
@@ -115,13 +117,19 @@ func main() {
 	go hb.Receiver(rxhbChan, activeElevators)
 	go hb.RemoveInactiveElevators(activeElevators, 4*time.Second)
 	//go counter.BroadcastWorldview(orders.MyWorldView,txOrderListChan)
-	go so.RecieveOrderList(rxOrderlistChan, OrderlistChan)
+	// go func() {
+	// 	for recievedWorldview := range RecieveWorldviewChan {
+	// 		fmt.Println("Recieved Worldview:", recievedWorldview)
+	// 		orders.MyWorldView = recievedWorldview
+	// 	}
+	// }()
     
  	test_channel := make(chan eio.ButtonEvent)
+	//block_chan := make(chan orders.OrderList)
 
     Initialize_Elev(e, drv_floors)
 
-	go counter.HandleButtonInput(e, drv_buttons, activeElevators, OrderlistChan)
+	go counter.HandleButtonInput(e, drv_buttons, activeElevators, RecieveWorldviewChan, TransmitWorldviewChan)
 
 
     defer fsm.Run(e, test_channel, drv_obstr, drv_floors, activeElevators)

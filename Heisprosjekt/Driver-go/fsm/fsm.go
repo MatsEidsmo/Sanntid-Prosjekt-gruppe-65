@@ -19,6 +19,8 @@ func Run(e *ec.Elevator, pushed_btn chan eio.ButtonEvent, obstr_chann chan bool,
 		case btn := <- pushed_btn:
 			fmt.Println("Button recieved!")
 
+			
+
 			el.Add_Request(e, btn.Floor, btn.Button)
 
 			
