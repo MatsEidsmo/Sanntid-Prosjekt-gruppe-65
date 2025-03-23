@@ -24,7 +24,7 @@ func ConfirmedQueue(wholeOrderList orders.OrderList) (confirmedOrderList orders.
 	return confirmedOrderList
 }
 
-func HandleButtonInput( e *ec.Elevator, pushed_btn chan eio.ButtonEvent, activeElevators map[string]hb.Heartbeat, recieve_chan chan orders.OrderList, transmitt_chan chan orders.OrderList) {
+func HandleButtonInput( e *ec.Elevator, pushed_btn chan eio.ButtonEvent, activeElevators map[string]hb.Heartbeat, recieve_chan chan orders.Order, transmitt_chan chan orders.Order) {
 	
 	
 	
@@ -34,23 +34,47 @@ func HandleButtonInput( e *ec.Elevator, pushed_btn chan eio.ButtonEvent, activeE
 		case btn := <- pushed_btn:
 			fmt.Println("Inside Button pushed")
 			o := orders.NewOrder(btn, e.ElevID)
-			orders.MyWorldView = append(orders.MyWorldView, &o)
-			
-			transmitt_chan <- orders.MyWorldView
+
+			if !orders.IsOrderInWorldview(o) {
+				//orders.MyWorldView = append(orders.MyWorldView, &o)
+				
+				transmitt_chan <- o
+
+			}
 	
 
 
 
-		case wv_update := <- recieve_chan:
+		case rec_order := <- recieve_chan:
 			fmt.Println("Inside Recieved Worldview")
-
 			// CONFIRM ORDER
-			for _, o := range wv_update {
+			switch rec_order.OrderConfirmation {
+			case orders.UNCONFIRMED:
+				if !orders.IsElevConfirmed(e, rec_order) {
+					rec_order.ElevsConfirmed = append(rec_order.ElevsConfirmed, e.ElevID)
+					
+					if len(rec_order.ElevsConfirmed) == len(activeElevators) {
+						rec_order.OrderConfirmation = orders.CONFIRMED
+						orders.MyWorldView = append(orders.MyWorldView, &rec_order)
+					}
+				}
+				BroadcastOrder(rec_order, transmitt_chan)
+				
+			case orders.CONFIRMED:
+				// Do Something else
+			
+			case orders.COMPLETED:
+				//Delete order
+			}
+
+
+
+			for _, o := range orders.MyWorldView {
 				if o.OrderConfirmation ==  orders.UNCONFIRMED {
 
 					if len(o.ElevsConfirmed) == len(activeElevators) {
 						o.OrderConfirmation = orders.CONFIRMED
-						BroadcastWorldview(wv_update, transmitt_chan)
+						BroadcastOrder(wv_update, transmitt_chan)
 	
 					} else {
 						elev_confirmed := false
@@ -61,7 +85,7 @@ func HandleButtonInput( e *ec.Elevator, pushed_btn chan eio.ButtonEvent, activeE
 						}
 						if !elev_confirmed { 
 							o.ElevsConfirmed = append(o.ElevsConfirmed, e.ElevID)
-							BroadcastWorldview(wv_update, transmitt_chan)
+							BroadcastOrder(wv_update, transmitt_chan)
 						}
 					}
 				}
@@ -73,10 +97,10 @@ func HandleButtonInput( e *ec.Elevator, pushed_btn chan eio.ButtonEvent, activeE
 	}
 }
 
-func BroadcastWorldview(WorldviewUpdate orders.OrderList, transmitChan chan orders.OrderList) {
+func BroadcastOrder(OrderUpdate orders.Order, transmitChan chan orders.Order) {
 	fmt.Println("Inside Broadcast Wv")
 
-	transmitChan <- WorldviewUpdate
+	transmitChan <- OrderUpdate
 	fmt.Println(transmitChan)
 
 }

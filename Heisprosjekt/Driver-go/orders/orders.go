@@ -20,13 +20,14 @@ type OrderState int
 const (
 	UNASSIGNED OrderState = iota
 	ASSIGNED
-	COMPLETED
+	
 )
 
 type OrderConfirmation int
 const (
 	UNCONFIRMED OrderConfirmation = iota
 	CONFIRMED
+	COMPLETED
 )
 
 type OrderType int
@@ -203,5 +204,23 @@ func RecieveOrderAndState(e2 *ec.Elevator, e3 *ec.Elevator)  {
 	
 }
 
+func IsOrderInWorldview(o Order) bool {
+	in_wv := false
+	for _, wv_orders := range MyWorldView{
+		if o.OrderType == wv_orders.OrderType && o.OrderFloor == wv_orders.OrderFloor && o.OriginElevator == wv_orders.OriginElevator {
+			in_wv = true
+		}
+	}
+	return in_wv
+}
 
+func IsElevConfirmed(e *ec.Elevator, order Order) bool {
+	ret_val := false
+	for _, id := range order.ElevsConfirmed{
+		if id == e.ElevID {
+			ret_val = true
+		}
+	}
+	return ret_val
+}
 

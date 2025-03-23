@@ -100,27 +100,27 @@ func main() {
     txhbChan := make(chan hb.Heartbeat)
 	rxhbChan := make(chan hb.Heartbeat)
 	
-	RecieveWorldviewChan := make(chan orders.OrderList, buff_size)
-	TransmitWorldviewChan := make(chan orders.OrderList, buff_size)
+	RecieveOrderChan := make(chan orders.Order, buff_size)
+	TransmitOrderChan := make(chan orders.Order, buff_size)
 	
 
 	activeElevators := make(map[string]hb.Heartbeat)
 
 	go bcast.Transmitter(20023, txhbChan)
-	go bcast.Receiver(20023, rxhbChan)
-	go bcast.Transmitter(20023, TransmitWorldviewChan)
-	go bcast.Receiver(20023, RecieveWorldviewChan)
+	go bcast.Receiver(20022, rxhbChan)
+	go bcast.Transmitter(20023, TransmitOrderChan)
+	go bcast.Receiver(20022, RecieveOrderChan)
 	
 	
 
 	go hb.Transmitter(*e, txhbChan)
 	go hb.Receiver(rxhbChan, activeElevators)
 	go hb.RemoveInactiveElevators(activeElevators, 4*time.Second)
-	//go counter.BroadcastWorldview(orders.MyWorldView,txOrderListChan)
+	//go counter.BroadcastOrder(orders.MyOrder,txOrderListChan)
 	// go func() {
-	// 	for recievedWorldview := range RecieveWorldviewChan {
-	// 		fmt.Println("Recieved Worldview:", recievedWorldview)
-	// 		orders.MyWorldView = recievedWorldview
+	// 	for recievedOrder := range RecieveOrderChan {
+	// 		fmt.Println("Recieved Order:", recievedOrder)
+	// 		orders.MyOrder = recievedOrder
 	// 	}
 	// }()
     
@@ -129,7 +129,7 @@ func main() {
 
     Initialize_Elev(e, drv_floors)
 
-	go counter.HandleButtonInput(e, test_channel, activeElevators, RecieveWorldviewChan, TransmitWorldviewChan)
+	go counter.HandleButtonInput(e, test_channel, activeElevators, RecieveOrderChan, TransmitOrderChan)
 
 
     defer fsm.Run(e, drv_buttons, drv_obstr, drv_floors, activeElevators, txhbChan)

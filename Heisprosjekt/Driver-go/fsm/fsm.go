@@ -74,7 +74,7 @@ func Run(
 					if e.Behaviour != 0 && !e.Obstruction{
 						eio.SetMotorDirection(curr_dir)
 					}
-
+			//}
 				
 			
 		case floor := <- floor_sensor:
