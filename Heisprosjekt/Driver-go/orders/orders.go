@@ -67,6 +67,7 @@ func NewOrder(btn_event eio.ButtonEvent, elevID string) Order {
 	return o
 }
 
+// should maybe return (assigned_elevator *ec.Elevator)
 func AssignOrderToElevator(o *Order, active_elevs map[string]hb.Heartbeat) {
 	
 

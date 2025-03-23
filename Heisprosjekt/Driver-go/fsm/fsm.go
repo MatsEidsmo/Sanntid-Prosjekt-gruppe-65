@@ -8,6 +8,7 @@ import (
 	hb "Driver-go/network/heartbeat"
 	//bcast "Driver-go/network/bcast"
 	orders "Driver-go/orders"
+	order_timeout "Driver-go/order_timeout"
 	"fmt"
 	"time"
 	
@@ -27,20 +28,20 @@ func Run(
 		case btn := <- pushed_btn:
 			fmt.Println("Button recieved!")
 
-			
-
 			el.Add_Request(e, btn.Floor, btn.Button)
-
+			
 			fmt.Println(*e)
 			
 			transmitt_chan <- hb.Heartbeat{Elevator: *e, Timestamp: time.Now()}
-
+			
 			new_order := orders.NewOrder(btn, e.ElevID)
 			
 			time.Sleep(1*time.Second)
 			
 			fmt.Println("Before ATE")
 			orders.AssignOrderToElevator(&new_order, active_elevs)
+			
+			order_timeout.OrderTimeout()
 			
 			fmt.Println("Assigned to Elevator")
 
