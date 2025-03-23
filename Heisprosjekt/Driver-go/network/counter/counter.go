@@ -69,28 +69,28 @@ func HandleButtonInput( e *ec.Elevator, pushed_btn chan eio.ButtonEvent, activeE
 
 
 
-			for _, o := range orders.MyWorldView {
-				if o.OrderConfirmation ==  orders.UNCONFIRMED {
+			// for _, o := range orders.MyWorldView {
+			// 	if o.OrderConfirmation ==  orders.UNCONFIRMED {
 
-					if len(o.ElevsConfirmed) == len(activeElevators) {
-						o.OrderConfirmation = orders.CONFIRMED
-						BroadcastOrder(wv_update, transmitt_chan)
+			// 		if len(o.ElevsConfirmed) == len(activeElevators) {
+			// 			o.OrderConfirmation = orders.CONFIRMED
+			// 			BroadcastOrder(wv_update, transmitt_chan)
 	
-					} else {
-						elev_confirmed := false
-						for _, id := range o.ElevsConfirmed {
-							if e.ElevID == id {
-								elev_confirmed = true
-							}
-						}
-						if !elev_confirmed { 
-							o.ElevsConfirmed = append(o.ElevsConfirmed, e.ElevID)
-							BroadcastOrder(wv_update, transmitt_chan)
-						}
-					}
-				}
-				fmt.Println(o)
-			}
+			// 		} else {
+			// 			elev_confirmed := false
+			// 			for _, id := range o.ElevsConfirmed {
+			// 				if e.ElevID == id {
+			// 					elev_confirmed = true
+			// 				}
+			// 			}
+			// 			if !elev_confirmed { 
+			// 				o.ElevsConfirmed = append(o.ElevsConfirmed, e.ElevID)
+			// 				BroadcastOrder(wv_update, transmitt_chan)
+			// 			}
+			// 		}
+			// 	}
+			// 	fmt.Println(o)
+			// }
 			
 			
 		}
