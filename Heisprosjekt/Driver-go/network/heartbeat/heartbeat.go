@@ -27,10 +27,12 @@ func Transmitter(elevator ec.Elevator, txChan chan Heartbeat) {
 func Receiver(rxChan chan Heartbeat, activeElevators map[string]Heartbeat) {
 	for {
 		heartbeat := <-rxChan
+		//fmt.Println(heartbeat)
 		activeElevators[heartbeat.Elevator.ElevID] = heartbeat
 		//fmt.Println("Recieved Heartbeat from:", string(heartbeat.Elevator.ElevID))
 		//fmt.Println(activeElevators)
 		//fmt.Println(len(activeElevators))
+
 	}
 }
 

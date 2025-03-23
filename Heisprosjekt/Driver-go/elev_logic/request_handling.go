@@ -37,8 +37,10 @@ func requests_here(e *ec.Elevator) int {
 }
 
 func Add_Request(e *ec.Elevator, floor int, btnType eio.ButtonType) {
-	e.RequestMatrix[floor][btnType] = 1
-	eio.SetButtonLamp(btnType, floor, true)
+	if !(e.Behaviour != ec.EB_Moving && btnType == eio.BT_Cab && floor == e.Floor){
+		e.RequestMatrix[floor][btnType] = 1
+		eio.SetButtonLamp(btnType, floor, true)
+	}
 	
 	
 }

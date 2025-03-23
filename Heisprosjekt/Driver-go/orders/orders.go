@@ -68,11 +68,12 @@ func NewOrder(btn_event eio.ButtonEvent, elevID string) Order {
 
 func AssignOrderToElevator(o *Order, active_elevs map[string]hb.Heartbeat) {
 	
+
 	var min_tti int
 	var min_ElevID string
 	for id, hb := range active_elevs {
 		
-		fmt.Println("Hey")
+		fmt.Println(&hb.Elevator)
 		curr_tti := TimeToIdle(&hb.Elevator)
 		fmt.Println("TTI calculated")
 		if curr_tti == 0 {
@@ -106,11 +107,13 @@ func AssignOrderToElevator(o *Order, active_elevs map[string]hb.Heartbeat) {
 }
 
 func TimeToIdle(e *ec.Elevator) (duration int) {
+	
 	duration = 0
 	e_floor_copy := e.Floor
 	e_dir_copy := e.Dir
 	e_rm_copy := e.RequestMatrix
-	fmt.Println("Floor:", e.Floor, "Dir:", e.Dir)
+	
+	
 	// e.Dir = 1
 	// e.Floor = 1
 	switch e.Behaviour {
@@ -119,6 +122,7 @@ func TimeToIdle(e *ec.Elevator) (duration int) {
 	case ec.EB_DoorOpen:
 		fmt.Println("Door open")
 		duration += int(ec.DOOR_TIMEOUT/2)
+		e.Dir = el.Choose_Dir(e)
 	case ec.EB_Moving:
 		fmt.Println("Moving!")
 		duration += int(ec.TRAVEL_TIME/2)

@@ -9,10 +9,18 @@ import (
 	//bcast "Driver-go/network/bcast"
 	orders "Driver-go/orders"
 	"fmt"
-	//"time"
+	"time"
+	
 )
 
-func Run(e *ec.Elevator, pushed_btn chan eio.ButtonEvent, obstr_chann chan bool, floor_sensor chan int, active_elevs map[string]hb.Heartbeat) {
+func Run(
+		e *ec.Elevator, 
+		pushed_btn chan eio.ButtonEvent, 
+		obstr_chann chan bool, 
+		floor_sensor chan int, 
+		active_elevs map[string]hb.Heartbeat,
+		transmitt_chan chan hb.Heartbeat,
+		) {
 	
 	for {
 		select {
@@ -23,11 +31,13 @@ func Run(e *ec.Elevator, pushed_btn chan eio.ButtonEvent, obstr_chann chan bool,
 
 			el.Add_Request(e, btn.Floor, btn.Button)
 
+			fmt.Println(*e)
 			
+			transmitt_chan <- hb.Heartbeat{Elevator: *e, Timestamp: time.Now()}
 
 			new_order := orders.NewOrder(btn, e.ElevID)
 			
-
+			time.Sleep(1*time.Second)
 			
 			fmt.Println("Before ATE")
 			orders.AssignOrderToElevator(&new_order, active_elevs)
@@ -53,7 +63,7 @@ func Run(e *ec.Elevator, pushed_btn chan eio.ButtonEvent, obstr_chann chan bool,
 			//Vent på confirmation om btn
 			// Regn ut hvilken heis som skal kjøre
 			// if Heis som skal kjøre == denne heisen
-			if e.ElevID == new_order.AssignedElevator {
+			//if e.ElevID == new_order.AssignedElevator {
 
 				
 				
@@ -61,10 +71,9 @@ func Run(e *ec.Elevator, pushed_btn chan eio.ButtonEvent, obstr_chann chan bool,
 					if btn.Floor == e.Floor && e.Behaviour != ec.EB_Moving{
 						ea.Timer_start()
 					}
-					if e.Behaviour != 0 {
+					if e.Behaviour != 0 && !e.Obstruction{
 						eio.SetMotorDirection(curr_dir)
 					}
-			} 
 
 				
 			

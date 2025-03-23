@@ -49,7 +49,7 @@ func Upon_Door_Timeout(e *ec.Elevator) {
 		return
 	}
 
-			
+	
 	curr_dir := el.Choose_Dir(e)
 	eio.SetDoorOpenLamp(false)
 	el.Clear_Floor_Requests(e, false)
