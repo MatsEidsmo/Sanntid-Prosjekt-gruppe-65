@@ -106,9 +106,9 @@ func main() {
 
 	activeElevators := make(map[string]hb.Heartbeat)
 
-	go bcast.Transmitter(20023, txhbChan)
+	go bcast.Transmitter(20022, txhbChan)
 	go bcast.Receiver(20022, rxhbChan)
-	go bcast.Transmitter(20023, TransmitOrderChan)
+	go bcast.Transmitter(20022, TransmitOrderChan)
 	go bcast.Receiver(20022, RecieveOrderChan)
 	
 	
@@ -124,14 +124,14 @@ func main() {
 	// 	}
 	// }()
     
- 	test_channel := make(chan eio.ButtonEvent)
+ 	send_to_fsm := make(chan eio.ButtonEvent)
 	//block_chan := make(chan orders.OrderList)
 
     Initialize_Elev(e, drv_floors)
 
-	go counter.HandleButtonInput(e, test_channel, activeElevators, RecieveOrderChan, TransmitOrderChan)
+	go counter.HandleButtonInput(e, drv_buttons, activeElevators, RecieveOrderChan, TransmitOrderChan, txhbChan, send_to_fsm)
 
 
-    defer fsm.Run(e, drv_buttons, drv_obstr, drv_floors, activeElevators, txhbChan)
+    defer fsm.Run(e, send_to_fsm, drv_obstr, drv_floors, activeElevators, txhbChan)
 
 }

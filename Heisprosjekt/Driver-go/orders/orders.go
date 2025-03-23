@@ -59,7 +59,7 @@ func NewOrder(btn_event eio.ButtonEvent, elevID string) Order {
 		OrderFloor: 	btn_event.Floor,
 		OriginElevator: elevID,
 	}
-	o.ElevsConfirmed = append(o.ElevsConfirmed, o.OriginElevator)
+	//o.ElevsConfirmed = append(o.ElevsConfirmed, o.OriginElevator)
 	if btn_event.Button == eio.BT_Cab {
 		o.OrderState = ASSIGNED
 		o.AssignedElevator = elevID
@@ -70,22 +70,26 @@ func NewOrder(btn_event eio.ButtonEvent, elevID string) Order {
 func AssignOrderToElevator(o *Order, active_elevs map[string]hb.Heartbeat) {
 	
 
-	var min_tti int
+	min_tth := 0
 	var min_ElevID string
 	for id, hb := range active_elevs {
 		
-		fmt.Println(&hb.Elevator)
-		curr_tti := TimeToIdle(&hb.Elevator)
-		fmt.Println("TTI calculated")
-		if curr_tti == 0 {
+		
+		curr_tth := TimeToRequestHandled(&hb.Elevator, o)
+		fmt.Println("elev", id, "has calculated tth:", curr_tth)
+		if curr_tth == 0  {
 			o.AssignedElevator = id
 			o.OrderState = ASSIGNED
 			return
 		}
-		if curr_tti < min_tti {
-			min_tti = curr_tti
+		if min_tth == 0 {
+			min_tth = curr_tth
+			min_ElevID = id
+		} else if curr_tth < min_tth {
+			min_tth = curr_tth
 			min_ElevID = id
 		}
+
 	}
 	o.AssignedElevator = min_ElevID
 	o.OrderState = ASSIGNED
@@ -107,13 +111,13 @@ func AssignOrderToElevator(o *Order, active_elevs map[string]hb.Heartbeat) {
 
 }
 
-func TimeToIdle(e *ec.Elevator) (duration int) {
+func TimeToRequestHandled(e *ec.Elevator, o *Order) (duration int) {
 	
 	duration = 0
 	e_floor_copy := e.Floor
 	e_dir_copy := e.Dir
 	e_rm_copy := e.RequestMatrix
-	
+	el.Add_Request(e, o.OrderFloor, o.OrderType)
 	
 	// e.Dir = 1
 	// e.Floor = 1
@@ -121,25 +125,25 @@ func TimeToIdle(e *ec.Elevator) (duration int) {
 	case ec.EB_Idle:
 		return duration
 	case ec.EB_DoorOpen:
-		fmt.Println("Door open")
+		//fmt.Println("Door open")
 		duration += int(ec.DOOR_TIMEOUT/2)
 		e.Dir = el.Choose_Dir(e)
 	case ec.EB_Moving:
-		fmt.Println("Moving!")
+		//fmt.Println("Moving!")
 		duration += int(ec.TRAVEL_TIME/2)
 		e.Floor += int(e.Dir)
 	}
-	fmt.Println("Floor:", e.Floor, "Dir:", e.Dir)
-	fmt.Println(e.RequestMatrix[3][0], e.RequestMatrix[3][1], e.RequestMatrix[3][2])
-	fmt.Println(e.RequestMatrix[2][0], e.RequestMatrix[2][1], e.RequestMatrix[2][2])
-	fmt.Println(e.RequestMatrix[1][0], e.RequestMatrix[1][1], e.RequestMatrix[1][2])
-	fmt.Println(e.RequestMatrix[0][0], e.RequestMatrix[0][1], e.RequestMatrix[0][2])
+	// fmt.Println("Floor:", e.Floor, "Dir:", e.Dir)
+	// fmt.Println(e.RequestMatrix[3][0], e.RequestMatrix[3][1], e.RequestMatrix[3][2])
+	// fmt.Println(e.RequestMatrix[2][0], e.RequestMatrix[2][1], e.RequestMatrix[2][2])
+	// fmt.Println(e.RequestMatrix[1][0], e.RequestMatrix[1][1], e.RequestMatrix[1][2])
+	// fmt.Println(e.RequestMatrix[0][0], e.RequestMatrix[0][1], e.RequestMatrix[0][2])
 	
 	
 	for {
 		
 		if el.Stop_Here(e) {
-			fmt.Println("Should stop here")
+			//fmt.Println("Should stop here")
 			duration += int(ec.DOOR_TIMEOUT)
 			e.Dir = el.Choose_Dir(e)
 			el.Clear_Floor_Requests(e, true)
@@ -204,7 +208,7 @@ func RecieveOrderAndState(e2 *ec.Elevator, e3 *ec.Elevator)  {
 	
 }
 
-func IsOrderInWorldview(o Order) bool {
+func IsOrderConfirmedInWorldview(o Order) bool {
 	in_wv := false
 	for _, wv_orders := range MyWorldView{
 		if o.OrderType == wv_orders.OrderType && o.OrderFloor == wv_orders.OrderFloor && o.OriginElevator == wv_orders.OriginElevator {
