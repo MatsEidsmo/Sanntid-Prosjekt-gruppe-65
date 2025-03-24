@@ -2,6 +2,7 @@ package counter
 
 import (
 	ec "Driver-go/elev_config"
+	"time"
 	// el "Driver-go/elev_logic"
 	eio "Driver-go/elevio"
 	//bcast "Driver-go/network/bcast"
@@ -28,10 +29,11 @@ func ConfirmedQueue(wholeOrderList orders.OrderList) (confirmedOrderList orders.
 func HandleButtonInput( 
 	e *ec.Elevator, 
 	pushed_btn chan eio.ButtonEvent, 
-	activeElevators map[string]hb.Heartbeat, 
 	recieve_chan chan orders.Order, 
 	transmitt_chan chan orders.Order,
-	transmitt_hb_chan chan hb.Heartbeat,
+	transmitt_state_chan chan ec.Elevator,
+	activeElevators map[string]hb.Heartbeat, 
+	elevatorStates map[string]ec.Elevator,
 	send_to_fsm chan eio.ButtonEvent,
 	) {
 	
@@ -41,17 +43,17 @@ func HandleButtonInput(
 	for {
 		select{
 		case btn := <- pushed_btn:
-			fmt.Println("Inside Button pushed")
-			o := orders.NewOrder(btn, e.ElevID)
-
-			//if !orders.IsOrderInWorldview(o) {
+			o := orders.NewOrder(btn, e.ElevID, send_to_fsm)
+			
+			
 				
-				//orders.MyWorldView = append(orders.MyWorldView, &o)
-				
-				transmitt_chan <- o
-				
-			//}
-	
+			fmt.Println("Sending Button WÆÆÆÆÆÆÆ")
+			//orders.MyWorldView = append(orders.MyWorldView, &o)
+			
+			transmitt_chan <- o
+			time.Sleep(1*time.Second)
+			
+			
 
 
 
@@ -67,28 +69,39 @@ func HandleButtonInput(
 					if len(rec_order.ElevsConfirmed) == len(activeElevators) {
 						rec_order.OrderConfirmation = orders.CONFIRMED
 						orders.MyWorldView = append(orders.MyWorldView, &rec_order)
+						
 					}
 					BroadcastOrder(rec_order, transmitt_chan)
 					//fmt.Println("Broadcasted order:", rec_order)
 				}
 				
 			case orders.CONFIRMED:
-			
+				fmt.Println("Num Active Elevs:",len(activeElevators))
+				fmt.Println("Num Elevators in elevstates:", len(elevatorStates))
+				if rec_order.OrderState != orders.ASSIGNED {
+					orders.AssignOrderToElevator(&rec_order, elevatorStates)
+					
+					if rec_order.AssignedElevator == e.ElevID{
 
-				orders.AssignOrderToElevator(&rec_order, activeElevators)
-				fmt.Println("My elevID:",e.ElevID)
-				fmt.Println("Assigned ElevID:", rec_order.AssignedElevator)
-				if e.ElevID == rec_order.AssignedElevator {
-					fmt.Println("Order assigned to ME:)")
-					send_to_fsm <- eio.ButtonEvent{rec_order.OrderFloor,rec_order.OrderType}
-				}else{
-					fmt.Println("Order Assigned to someone else")
+						fmt.Println("Order assigned to ME:)")
+						send_to_fsm <- eio.ButtonEvent{rec_order.OrderFloor,rec_order.OrderType}
+					}
+
 				}
 				
 				
 				
+				
+				
 			case orders.COMPLETED:
-				//Delete order
+				eio.SetButtonLamp(rec_order.OrderType, rec_order.OrderFloor, false)
+				// filtered_wv := orders.MyWorldView[:0]
+				// for _, order := range orders.MyWorldView {
+				// 	if order.OrderID != rec_order.OrderID {
+				// 		filtered_wv = append(filtered_wv, order)
+				// 	}
+				// }
+				// orders.MyWorldView = filtered_wv
 			}
 			
 

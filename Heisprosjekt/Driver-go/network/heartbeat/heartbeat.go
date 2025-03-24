@@ -19,7 +19,7 @@ func Transmitter(elevator ec.Elevator, txChan chan Heartbeat) {
 	for {
 		txChan <- Heartbeat{Elevator: elevator, Timestamp: time.Now()}
 		time.Sleep(2000 * time.Millisecond) 
-		
+		//fmt.Println(elevator)
 		
 	}
 }
@@ -27,7 +27,7 @@ func Transmitter(elevator ec.Elevator, txChan chan Heartbeat) {
 func Receiver(rxChan chan Heartbeat, activeElevators map[string]Heartbeat) {
 	for {
 		heartbeat := <-rxChan
-		//fmt.Println(heartbeat)
+		//fmt.Println(heartbeat.Elevator)
 		activeElevators[heartbeat.Elevator.ElevID] = heartbeat
 		//fmt.Println("Recieved Heartbeat from:", string(heartbeat.Elevator.ElevID))
 		//fmt.Println(activeElevators)
