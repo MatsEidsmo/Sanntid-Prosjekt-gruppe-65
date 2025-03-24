@@ -73,8 +73,17 @@ func HandleButtonInput(
 				}
 				
 			case orders.CONFIRMED:
-				OrderToBeSent := rec_order
+			
 
+				orders.AssignOrderToElevator(&rec_order, activeElevators)
+				fmt.Println("My elevID:",e.ElevID)
+				fmt.Println("Assigned ElevID:", rec_order.AssignedElevator)
+				if e.ElevID == rec_order.AssignedElevator {
+					fmt.Println("Order assigned to ME:)")
+					send_to_fsm <- eio.ButtonEvent{rec_order.OrderFloor,rec_order.OrderType}
+				}else{
+					fmt.Println("Order Assigned to someone else")
+				}
 				
 				
 				
@@ -82,15 +91,6 @@ func HandleButtonInput(
 				//Delete order
 			}
 			
-			orders.AssignOrderToElevator(&rec_order, activeElevators)
-			fmt.Println("My elevID:",e.ElevID)
-			fmt.Println("Assigned ElevID:", rec_order.AssignedElevator)
-			if e.ElevID == rec_order.AssignedElevator {
-				fmt.Println("Order assigned to ME:)")
-				send_to_fsm <- eio.ButtonEvent{rec_order.OrderFloor,rec_order.OrderType}
-			}else{
-				fmt.Println("Order Assigned to someone else")
-			}
 
 
 
@@ -114,14 +114,8 @@ func HandleButtonInput(
 			// 			}
 			// 		}
 			// 	}
-<<<<<<< HEAD
-			
-			//}
-			
-=======
 			// 	fmt.Println(o)
 			// }
->>>>>>> 7dfa75d03413bb898961304ba2865e571ebfb545
 			
 			
 		}

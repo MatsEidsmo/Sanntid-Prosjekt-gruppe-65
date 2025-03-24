@@ -14,6 +14,7 @@ import (
 
 	bcast "Driver-go/network/bcast"
 	hb "Driver-go/network/heartbeat"
+	"sort"
 )
 
 type OrderState int
@@ -67,32 +68,47 @@ func NewOrder(btn_event eio.ButtonEvent, elevID string) Order {
 	return o
 }
 
+type calc_struct struct {
+	id string
+	duration int
+}
+
 func AssignOrderToElevator(o *Order, active_elevs map[string]hb.Heartbeat) {
 	
 
-	min_tth := 0
+	var tth_arr []calc_struct
+	
 	var min_ElevID string
 	for id, hb := range active_elevs {
 		
 		
 		curr_tth := TimeToRequestHandled(&hb.Elevator, o)
 		fmt.Println("elev", id, "has calculated tth:", curr_tth)
-		if curr_tth == 0  {
-			o.AssignedElevator = id
-			o.OrderState = ASSIGNED
-			return
-		}
-		if min_tth == 0 {
-			min_tth = curr_tth
-			min_ElevID = id
-		} else if curr_tth < min_tth {
-			min_tth = curr_tth
-			min_ElevID = id
-		}
-
+		tth_arr = append(tth_arr, calc_struct{id,curr_tth})
+		
+		
 	}
+	
+	sort.Slice(tth_arr, func(i, j int) bool {
+        return tth_arr[i].duration < tth_arr[j].duration
+    })
+
+	var equal_durations []string
+	for _, tth_struct := range tth_arr{
+		if tth_struct.duration == tth_arr[0].duration{
+			equal_durations = append(equal_durations, tth_struct.id)
+		}
+	}
+
+	sort.Slice(equal_durations, func(i, j int) bool {
+        return equal_durations[i] < equal_durations[j]
+    })
+
+	min_ElevID = equal_durations[0]
+   
 	o.AssignedElevator = min_ElevID
 	o.OrderState = ASSIGNED
+}
 
 	// time1 := TimeToIdle(e1)
 	// time2 := TimeToIdle(e2)
@@ -109,7 +125,7 @@ func AssignOrderToElevator(o *Order, active_elevs map[string]hb.Heartbeat) {
 	
 
 
-}
+
 
 func TimeToRequestHandled(e *ec.Elevator, o *Order) (duration int) {
 	
