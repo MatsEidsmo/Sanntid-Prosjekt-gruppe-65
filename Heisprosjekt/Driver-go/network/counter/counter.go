@@ -70,6 +70,7 @@ func HandleButtonInput(
 						rec_order.OrderConfirmation = orders.CONFIRMED
 						orders.MyWorldView = append(orders.MyWorldView, &rec_order)
 						
+						
 					}
 					BroadcastOrder(rec_order, transmitt_chan)
 					//fmt.Println("Broadcasted order:", rec_order)
@@ -80,6 +81,7 @@ func HandleButtonInput(
 				fmt.Println("Num Elevators in elevstates:", len(elevatorStates))
 				if rec_order.OrderState != orders.ASSIGNED {
 					orders.AssignOrderToElevator(&rec_order, elevatorStates)
+					eio.SetButtonLamp(rec_order.OrderType, rec_order.OrderFloor, true)
 					
 					if rec_order.AssignedElevator == e.ElevID{
 
@@ -95,13 +97,16 @@ func HandleButtonInput(
 				
 			case orders.COMPLETED:
 				eio.SetButtonLamp(rec_order.OrderType, rec_order.OrderFloor, false)
-				// filtered_wv := orders.MyWorldView[:0]
-				// for _, order := range orders.MyWorldView {
-				// 	if order.OrderID != rec_order.OrderID {
-				// 		filtered_wv = append(filtered_wv, order)
-				// 	}
-				// }
-				// orders.MyWorldView = filtered_wv
+				
+				filtered_wv := orders.MyWorldView[:0]
+				for _, order := range orders.MyWorldView {
+					if order.OrderID != rec_order.OrderID {
+						filtered_wv = append(filtered_wv, order)
+					}else{
+						BroadcastOrder(rec_order, transmitt_chan)
+					}
+				}
+				orders.MyWorldView = filtered_wv
 			}
 			
 
