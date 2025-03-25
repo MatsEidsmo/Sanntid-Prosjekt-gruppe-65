@@ -255,7 +255,10 @@ func Complete_order( floor int, txOrderChan chan Order) {
 	for _, order := range MyWorldView {
 		if order.OrderFloor == floor{
 			order.OrderConfirmation = COMPLETED
-			txOrderChan <- *order
+			for i := 0; i < 10; i++ {
+
+				txOrderChan <- *order
+			}
 		}
 	}
 }

@@ -72,7 +72,7 @@ func Run(
 				
 			curr_dir := el.Choose_Dir(e)
 			if btn.Floor == e.Floor && e.Behaviour != ec.EB_Moving{
-				ea.Timer_start()
+				ea.Open_Door(e)
 			}
 			if e.Behaviour != 0 && !e.Obstruction{
 				eio.SetMotorDirection(curr_dir)
@@ -96,6 +96,7 @@ func Run(
 				
 			}
 			transmitt_elev_chan <- *e
+		
 		case <- ea.DoorTimer.C:
 			
 			ea.Upon_Door_Timeout(e)

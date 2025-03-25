@@ -111,18 +111,18 @@ func main() {
 	elevatorstates := make(map[string]ec.Elevator)
 	activeElevators := make(map[string]hb.Heartbeat)
 
-	go bcast.Transmitter(20025, txhbChan)
-	go bcast.Receiver(20025, rxhbChan)
-	go bcast.Transmitter(20025, TransmitOrderChan)
-	go bcast.Receiver(20025, RecieveOrderChan)
-	go bcast.Transmitter(20025, TransmitStateChan)
-	go bcast.Receiver(20025, RecieveStateChan)
+	go bcast.Transmitter(20023, txhbChan)
+	go bcast.Receiver(20023, rxhbChan)
+	go bcast.Transmitter(20023, TransmitOrderChan)
+	go bcast.Receiver(20023, RecieveOrderChan)
+	go bcast.Transmitter(20023, TransmitStateChan)
+	go bcast.Receiver(20023, RecieveStateChan)
 	
 	
 
 	go hb.Transmitter(e, txhbChan)
 	go hb.Receiver(rxhbChan, activeElevators)
-	go hb.RemoveInactiveElevators(activeElevators, elevatorstates, 3*time.Second)
+	go hb.RemoveInactiveElevators(activeElevators, elevatorstates, 5*time.Second)
 	
 	go sh.RecieveAndUpdateStates(RecieveStateChan, elevatorstates)
 
@@ -132,7 +132,7 @@ func main() {
 
     Initialize_Elev(&e, drv_floors, TransmitStateChan)
 
-	fmt.Println(e.ElevID)
+	fmt.Println(elevatorstates)
 
 	go counter.HandleButtonInput(&e, drv_buttons, RecieveOrderChan, TransmitOrderChan, TransmitStateChan, activeElevators, elevatorstates, send_to_fsm)
 

@@ -45,6 +45,13 @@ func HandleButtonInput(
 		case btn := <- pushed_btn:
 			o := orders.NewOrder(btn, e.ElevID, send_to_fsm)
 			
+			for _, e := range elevatorStates {
+				if e.Floor == o.OrderFloor && e.Behaviour != ec.EB_Moving {
+					o.AssignedElevator = e.ElevID
+					
+
+				}
+			}
 			
 				
 			fmt.Println("Sending Button WÆÆÆÆÆÆÆ")

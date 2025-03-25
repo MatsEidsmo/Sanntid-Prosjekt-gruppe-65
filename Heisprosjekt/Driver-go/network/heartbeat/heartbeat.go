@@ -18,7 +18,7 @@ type Heartbeat struct {
 func Transmitter(elevator ec.Elevator, txChan chan Heartbeat) {
 	for {
 		txChan <- Heartbeat{Elevator: elevator, Timestamp: time.Now()}
-		time.Sleep(2000 * time.Millisecond) 
+		time.Sleep(200 * time.Millisecond) 
 		//fmt.Println(elevator)
 		
 	}
