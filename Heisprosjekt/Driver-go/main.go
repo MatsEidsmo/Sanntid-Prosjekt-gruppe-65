@@ -122,7 +122,7 @@ func main() {
 
 	go hb.Transmitter(e, txhbChan)
 	go hb.Receiver(rxhbChan, activeElevators)
-	go hb.RemoveInactiveElevators(activeElevators, 4*time.Second)
+	go hb.RemoveInactiveElevators(activeElevators, elevatorstates, 3*time.Second)
 	
 	go sh.RecieveAndUpdateStates(RecieveStateChan, elevatorstates)
 

@@ -36,7 +36,7 @@ func Receiver(rxChan chan Heartbeat, activeElevators map[string]Heartbeat) {
 	}
 }
 
-func RemoveInactiveElevators(activeElevators map[string]Heartbeat, timeout time.Duration) {
+func RemoveInactiveElevators(activeElevators map[string]Heartbeat, elevatorstates map[string]ec.Elevator,  timeout time.Duration) {
 	for {
 		time.Sleep(timeout)
 		now := time.Now()
@@ -44,6 +44,7 @@ func RemoveInactiveElevators(activeElevators map[string]Heartbeat, timeout time.
 			if now.Sub(hb.Timestamp) > timeout {
 				fmt.Printf("Elevator %s lost connection\n", id)
 				delete(activeElevators, id)
+				delete(elevatorstates, id)
 			}
 		}
 	}

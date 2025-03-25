@@ -90,7 +90,7 @@ func AssignOrderToElevator(o *Order, active_elevs map[string]ec.Elevator) {
 		
 
 		curr_tth := TimeToRequestHandled(&elev, o)
-		fmt.Println("elev", id, "has calculated tth:", curr_tth)
+		//fmt.Println("elev", id, "has calculated tth:", curr_tth)
 		tth_arr = append(tth_arr, calc_struct{id,curr_tth})
 		
 		
