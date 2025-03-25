@@ -73,6 +73,7 @@ func Run(
 			curr_dir := el.Choose_Dir(e)
 			if btn.Floor == e.Floor && e.Behaviour != ec.EB_Moving{
 				ea.Open_Door(e)
+				orders.Complete_order(e.Floor, transmitt_order_chan)
 			}
 			if e.Behaviour != 0 && !e.Obstruction{
 				eio.SetMotorDirection(curr_dir)

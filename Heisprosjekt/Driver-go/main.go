@@ -7,6 +7,7 @@ import (
 	eio "Driver-go/elevio"
 	fsm "Driver-go/fsm"
 	bcast "Driver-go/network/bcast"
+	peers "Driver-go/network/bcast"
 	hb "Driver-go/network/heartbeat"
 	//so "Driver-go/network/sendorders"
 	"Driver-go/orders"
@@ -26,9 +27,10 @@ import (
 )
 
 
-func Initialize_Elev(e *ec.Elevator, drv_floors chan int, TransmitStateChan chan ec.Elevator) {
+func Initialize_Elev(e *ec.Elevator, drv_floors chan int, TransmitStateChan chan ec.Elevator, elev_states map[string]ec.Elevator) {
     floornumber := <-drv_floors
     eio.SetMotorDirection(eio.MD_Down)
+	
     for floornumber != 0 {
         floornumber := <-drv_floors
         eio.SetFloorIndicator(floornumber)
@@ -44,9 +46,15 @@ func Initialize_Elev(e *ec.Elevator, drv_floors chan int, TransmitStateChan chan
     el.Clear_RequestMatrix(e)
     
     e.Behaviour = ec.EB_Idle
-	TransmitStateChan <- *e
     //e.ElevID = "Elevator1"
-    
+
+	for {
+		TransmitStateChan <- *e
+		if len(elev_states) == ec.N_elevators {
+			break
+		}
+	}
+
     
 
     
@@ -115,8 +123,8 @@ func main() {
 	go bcast.Receiver(20023, rxhbChan)
 	go bcast.Transmitter(20023, TransmitOrderChan)
 	go bcast.Receiver(20023, RecieveOrderChan)
-	go bcast.Transmitter(20023, TransmitStateChan)
-	go bcast.Receiver(20023, RecieveStateChan)
+	go peers.Transmitter(20023, TransmitStateChan)
+	go peers.Receiver(20023, RecieveStateChan)
 	
 	
 
@@ -130,7 +138,7 @@ func main() {
  	send_to_fsm := make(chan eio.ButtonEvent)
 	//block_chan := make(chan orders.OrderList)
 
-    Initialize_Elev(&e, drv_floors, TransmitStateChan)
+    Initialize_Elev(&e, drv_floors, TransmitStateChan, elevatorstates)
 
 	fmt.Println(elevatorstates)
 
