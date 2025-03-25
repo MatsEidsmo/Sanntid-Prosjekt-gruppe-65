@@ -48,7 +48,7 @@ func HandleButtonInput(
 			for _, e := range elevatorStates {
 				if e.Floor == o.OrderFloor && e.Behaviour != ec.EB_Moving {
 					o.AssignedElevator = e.ElevID
-					
+					o.OrderState = orders.ASSIGNED
 
 				}
 			}
@@ -95,8 +95,12 @@ func HandleButtonInput(
 						fmt.Println("Order assigned to ME:)")
 						send_to_fsm <- eio.ButtonEvent{rec_order.OrderFloor,rec_order.OrderType}
 					}
-
-				}
+					
+					///// UNTESTED DEBUGGING
+				}else{
+					eio.SetButtonLamp(rec_order.OrderType, rec_order.OrderFloor, false)
+			
+				} //// END UNTESTED DEBUGGING
 				
 				
 				
