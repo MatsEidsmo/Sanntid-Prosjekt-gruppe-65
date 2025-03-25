@@ -79,8 +79,8 @@ type calc_struct struct {
 	duration int
 }
 
-func ElevIDToElevStruct(elevID string) (e *ec.Elevator) {
-	
+func ElevIDToElevStruct(elevID string, active_elevs map[string]ec.Elevator) ec.Elevator {
+	return active_elevs[elevID]
 }
 
 func AssignOrderToElevator(o *Order, active_elevs map[string]ec.Elevator) {

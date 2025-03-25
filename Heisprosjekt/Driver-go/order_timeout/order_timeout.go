@@ -4,7 +4,7 @@ import (
 	"time"
 	orders "Driver-go/orders"
 	ec "Driver-go/elev_config"
-	eio "Driver-go/elevio"
+	"sync"
 )
 
 // Problem: Potentially active_elevators is not updated. So if the assigned_elevator is the only elevator then we do cannot assign order to
@@ -15,47 +15,60 @@ import (
 // accessable available
 func OrderTimeout(
 	recieve_chan chan orders.Order,
-	order_reassigned chan bool,  
-	assigned_elevator *ec.Elevator, 
+	order_reassigned chan orders.Order, 
 	active_elevators map[string]ec.Elevator, 
 	tolarance_duration int,
 	) {
 
-
+	var mu sync.Mutex
 
 	for {
 		select {
-		case order:= <- recieve_chan:
-			order_completion_duration := orders.TimeToRequestHandled(assigned_elevator, &order)
+		case order:= <-recieve_chan:
+			assigned_elevator := orders.ElevIDToElevStruct(order.AssignedElevator, active_elevators)
+			order_completion_duration := orders.TimeToRequestHandled(&assigned_elevator, &order)
 			timer := time.NewTimer(time.Duration(order_completion_duration + tolarance_duration))
 			<-timer.C
 			if order.OrderConfirmation != orders.COMPLETED {
 				// Assign again discarding this elevator
-				RemoveActiveElevator()
 				if len(active_elevators) < 2 {
-					AddActiveElevator()
 					break
 				}
-				orders.AssignOrderToElevator(order, active_elevators)
-				AddActiveElevator()
-				order_reassigned <- true
+				mu.Lock()
+				active_elevators = RemoveElevFromMap(&assigned_elevator, active_elevators)
+				orders.AssignOrderToElevator(&order, active_elevators)
+				active_elevators = AddElevToMap(&assigned_elevator, active_elevators)
+				mu.Unlock()
+				order_reassigned <- order
 			}
 
-		case <-order_reassigned:
-			order_completion_duration := orders.TimeToRequestHandled(assigned_elevator, &order)
+		case order := <-order_reassigned:
+			assigned_elevator := orders.ElevIDToElevStruct(order.AssignedElevator, active_elevators)
+			order_completion_duration := orders.TimeToRequestHandled(&assigned_elevator, &order)
 			timer := time.NewTimer(time.Duration(order_completion_duration + tolarance_duration))
 			<-timer.C
 			if order.OrderConfirmation != orders.COMPLETED {
 				// Assign again discarding this elevator
-				RemoveActiveElevator()
 				if len(active_elevators) < 2 {
-					AddActiveElevator()
 					break
 				}
-				orders.AssignOrderToElevator(order, active_elevators)
-				AddActiveElevator()
-				order_reassigned <- true
+				mu.Lock()
+				active_elevators = RemoveElevFromMap(&assigned_elevator, active_elevators)
+				orders.AssignOrderToElevator(&order, active_elevators)
+				active_elevators = AddElevToMap(&assigned_elevator, active_elevators)
+				mu.Unlock()
+				order_reassigned <- order
 			}
 		}
 	}
+}
+
+func RemoveElevFromMap(elev *ec.Elevator, elev_map map[string]ec.Elevator) map[string]ec.Elevator {
+	delete(elev_map, elev.ElevID)
+	return elev_map
+}
+
+func AddElevToMap(elev *ec.Elevator, elev_map map[string]ec.Elevator) map[string]ec.Elevator {
+	elev_map[elev.ElevID] = *elev
+	return elev_map
 }

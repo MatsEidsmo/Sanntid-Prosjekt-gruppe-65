@@ -2,7 +2,7 @@ package counter
 
 import (
 	ec "Driver-go/elev_config"
-	"time"
+	//"time"
 	// el "Driver-go/elev_logic"
 	eio "Driver-go/elevio"
 	//bcast "Driver-go/network/bcast"

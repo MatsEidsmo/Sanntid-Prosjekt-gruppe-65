@@ -56,7 +56,6 @@ func Initialize_Elev(e *ec.Elevator, drv_floors chan int, TransmitStateChan chan
 }
 
 func main() {
-	buff_size := 16*1024
 
 	var id string
 	flag.StringVar(&id, "id", "", "id of this peer")
@@ -104,11 +103,13 @@ func main() {
     txhbChan := make(chan hb.Heartbeat)
 	rxhbChan := make(chan hb.Heartbeat)
 	
-	RecieveOrderChan := make(chan orders.Order, buff_size)
-	TransmitOrderChan := make(chan orders.Order, buff_size)
+	RecieveOrderChan := make(chan orders.Order)
+	TransmitOrderChan := make(chan orders.Order)
 
 	TransmitStateChan := make(chan ec.Elevator)
 	RecieveStateChan := make(chan ec.Elevator)
+	
+	OrderReassignChan := make(chan orders.Order, 20) // Allowed to send 20 reassignments
 	
 	elevatorstates := make(map[string]ec.Elevator)
 	activeElevators := make(map[string]hb.Heartbeat)
@@ -128,7 +129,7 @@ func main() {
 	
 	go sh.RecieveAndUpdateStates(RecieveStateChan, elevatorstates)
 
-	go order_timeout.OrderTimeout()
+	go order_timeout.OrderTimeout(RecieveOrderChan, OrderReassignChan, elevatorstates, 1)
 
     
  	send_to_fsm := make(chan eio.ButtonEvent)
