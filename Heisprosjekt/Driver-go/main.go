@@ -8,9 +8,11 @@ import (
 	fsm "Driver-go/fsm"
 	bcast "Driver-go/network/bcast"
 	hb "Driver-go/network/heartbeat"
+	"Driver-go/order_timeout"
+
 	//so "Driver-go/network/sendorders"
-	"Driver-go/orders"
 	counter "Driver-go/network/counter"
+	"Driver-go/orders"
 	sh "Driver-go/stateHandler"
 
 	//"Driver-go/orders"
@@ -125,6 +127,8 @@ func main() {
 	go hb.RemoveInactiveElevators(activeElevators, 4*time.Second)
 	
 	go sh.RecieveAndUpdateStates(RecieveStateChan, elevatorstates)
+
+	go order_timeout.OrderTimeout()
 
     
  	send_to_fsm := make(chan eio.ButtonEvent)

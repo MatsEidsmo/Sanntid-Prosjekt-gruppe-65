@@ -51,7 +51,6 @@ func HandleButtonInput(
 			//orders.MyWorldView = append(orders.MyWorldView, &o)
 			
 			transmitt_chan <- o
-			time.Sleep(1*time.Second)
 			
 			
 
