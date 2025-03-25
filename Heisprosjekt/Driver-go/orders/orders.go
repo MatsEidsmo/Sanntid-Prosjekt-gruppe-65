@@ -5,6 +5,8 @@ import (
 	ec "Driver-go/elev_config"
 	el "Driver-go/elev_logic"
 	eio "Driver-go/elevio"
+	"time"
+
 	//"container/list"
 	"fmt"
 	//"strings"
@@ -13,7 +15,8 @@ import (
 	//"time"
 
 	bcast "Driver-go/network/bcast"
-	hb "Driver-go/network/heartbeat"
+	//hb "Driver-go/network/heartbeat"
+	"sort"
 )
 
 type OrderState int
@@ -45,6 +48,7 @@ type Order struct {
 	AssignedElevator string
 	OrderConfirmation OrderConfirmation
 	ElevsConfirmed []string
+	OrderID time.Time
 
 }
 
@@ -52,44 +56,68 @@ type OrderList []*Order
 
 var MyWorldView OrderList
 
-func NewOrder(btn_event eio.ButtonEvent, elevID string) Order {
+func NewOrder(btn_event eio.ButtonEvent, elevID string, send_to_fsm chan eio.ButtonEvent) Order {
 	o:= Order{
 		OrderState: 	UNASSIGNED,
 		OrderType: 		btn_event.Button,
 		OrderFloor: 	btn_event.Floor,
 		OriginElevator: elevID,
+		OrderID : 		time.Now(),
 	}
-	o.ElevsConfirmed = append(o.ElevsConfirmed, o.OriginElevator)
-	if btn_event.Button == eio.BT_Cab {
+	//o.ElevsConfirmed = append(o.ElevsConfirmed, o.OriginElevator)
+	if o.OrderType == eio.BT_Cab {
 		o.OrderState = ASSIGNED
-		o.AssignedElevator = elevID
+		o.AssignedElevator = o.OriginElevator
+		o.OrderConfirmation = CONFIRMED
+		send_to_fsm <- eio.ButtonEvent{o.OrderFloor, o.OrderType}
 	}
 	return o
 }
 
-// should maybe return (assigned_elevator *ec.Elevator)
-func AssignOrderToElevator(o *Order, active_elevs map[string]hb.Heartbeat) {
+type calc_struct struct {
+	id string
+	duration int
+}
+
+func AssignOrderToElevator(o *Order, active_elevs map[string]ec.Elevator) {
 	
 
-	var min_tti int
+	var tth_arr []calc_struct
+	
 	var min_ElevID string
-	for id, hb := range active_elevs {
+	for id, elev := range active_elevs {
 		
-		fmt.Println(&hb.Elevator)
-		curr_tti := TimeToIdle(&hb.Elevator)
-		fmt.Println("TTI calculated")
-		if curr_tti == 0 {
-			o.AssignedElevator = id
-			o.OrderState = ASSIGNED
-			return
-		}
-		if curr_tti < min_tti {
-			min_tti = curr_tti
-			min_ElevID = id
+		
+
+		curr_tth := TimeToRequestHandled(&elev, o)
+		fmt.Println("elev", id, "has calculated tth:", curr_tth)
+		tth_arr = append(tth_arr, calc_struct{id,curr_tth})
+		
+		
+	}
+	
+	sort.Slice(tth_arr, func(i, j int) bool {
+        return tth_arr[i].duration < tth_arr[j].duration
+    })
+	
+	var equal_durations []string
+	for _, tth_struct := range tth_arr{
+		if tth_struct.duration == tth_arr[0].duration{
+			equal_durations = append(equal_durations, tth_struct.id)
 		}
 	}
+	
+	sort.Slice(equal_durations, func(i, j int) bool {
+		return equal_durations[i] < equal_durations[j]
+    })
+	
+	min_ElevID = equal_durations[0]
+	
+	fmt.Println("Assigned Elevator:", min_ElevID)
+	
 	o.AssignedElevator = min_ElevID
 	o.OrderState = ASSIGNED
+}
 
 	// time1 := TimeToIdle(e1)
 	// time2 := TimeToIdle(e2)
@@ -106,41 +134,38 @@ func AssignOrderToElevator(o *Order, active_elevs map[string]hb.Heartbeat) {
 	
 
 
-}
 
-func TimeToIdle(e *ec.Elevator) (duration int) {
+
+func TimeToRequestHandled(e *ec.Elevator, o *Order) (duration int) {
 	
 	duration = 0
 	e_floor_copy := e.Floor
 	e_dir_copy := e.Dir
 	e_rm_copy := e.RequestMatrix
+	el.Add_Request(e, o.OrderFloor, o.OrderType)
 	
 	
-	// e.Dir = 1
-	// e.Floor = 1
+	
 	switch e.Behaviour {
 	case ec.EB_Idle:
+		duration += o.OrderFloor*(int(ec.TRAVEL_TIME))
 		return duration
 	case ec.EB_DoorOpen:
-		fmt.Println("Door open")
+		//fmt.Println("Door open")
 		duration += int(ec.DOOR_TIMEOUT/2)
 		e.Dir = el.Choose_Dir(e)
 	case ec.EB_Moving:
-		fmt.Println("Moving!")
+		//fmt.Println("Moving!")
 		duration += int(ec.TRAVEL_TIME/2)
 		e.Floor += int(e.Dir)
 	}
-	fmt.Println("Floor:", e.Floor, "Dir:", e.Dir)
-	fmt.Println(e.RequestMatrix[3][0], e.RequestMatrix[3][1], e.RequestMatrix[3][2])
-	fmt.Println(e.RequestMatrix[2][0], e.RequestMatrix[2][1], e.RequestMatrix[2][2])
-	fmt.Println(e.RequestMatrix[1][0], e.RequestMatrix[1][1], e.RequestMatrix[1][2])
-	fmt.Println(e.RequestMatrix[0][0], e.RequestMatrix[0][1], e.RequestMatrix[0][2])
+	
 	
 	
 	for {
 		
 		if el.Stop_Here(e) {
-			fmt.Println("Should stop here")
+			//fmt.Println("Should stop here")
 			duration += int(ec.DOOR_TIMEOUT)
 			e.Dir = el.Choose_Dir(e)
 			el.Clear_Floor_Requests(e, true)
@@ -148,7 +173,7 @@ func TimeToIdle(e *ec.Elevator) (duration int) {
 				e.Floor = e_floor_copy
 				e.Dir = e_dir_copy
 				e.RequestMatrix = e_rm_copy
-				fmt.Println("Duration:", duration)
+				
 				return duration
 			}
 		}
@@ -225,3 +250,12 @@ func IsElevConfirmed(e *ec.Elevator, order Order) bool {
 	return ret_val
 }
 
+
+func Complete_order( floor int, txOrderChan chan Order) {
+	for _, order := range MyWorldView {
+		if order.OrderFloor == floor{
+			order.OrderConfirmation = COMPLETED
+			txOrderChan <- *order
+		}
+	}
+}

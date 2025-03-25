@@ -4,8 +4,9 @@ import (
 	ec "Driver-go/elev_config"
 	el "Driver-go/elev_logic"
 	eio "Driver-go/elevio"
-	"time"
+	//"Driver-go/orders"
 	"fmt"
+	"time"
 )
 
 var DoorTimer *time.Timer
@@ -37,6 +38,7 @@ func Open_Door(e *ec.Elevator) {
 	eio.SetDoorOpenLamp(true)
 	e.Behaviour = ec.EB_DoorOpen
 	fmt.Println("Door is Open!")
+	
 	
 }
 

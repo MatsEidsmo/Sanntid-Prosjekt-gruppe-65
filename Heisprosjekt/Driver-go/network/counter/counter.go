@@ -2,6 +2,7 @@ package counter
 
 import (
 	ec "Driver-go/elev_config"
+	"time"
 	// el "Driver-go/elev_logic"
 	eio "Driver-go/elevio"
 	//bcast "Driver-go/network/bcast"
@@ -11,6 +12,7 @@ import (
 
 	//so "Driver-go/network/sendorders"
 	"fmt"
+	//"time"
 )
 
 
@@ -24,7 +26,16 @@ func ConfirmedQueue(wholeOrderList orders.OrderList) (confirmedOrderList orders.
 	return confirmedOrderList
 }
 
-func HandleButtonInput( e *ec.Elevator, pushed_btn chan eio.ButtonEvent, activeElevators map[string]hb.Heartbeat, recieve_chan chan orders.Order, transmitt_chan chan orders.Order) {
+func HandleButtonInput( 
+	e *ec.Elevator, 
+	pushed_btn chan eio.ButtonEvent, 
+	recieve_chan chan orders.Order, 
+	transmitt_chan chan orders.Order,
+	transmitt_state_chan chan ec.Elevator,
+	activeElevators map[string]hb.Heartbeat, 
+	elevatorStates map[string]ec.Elevator,
+	send_to_fsm chan eio.ButtonEvent,
+	) {
 	
 	
 	
@@ -32,40 +43,72 @@ func HandleButtonInput( e *ec.Elevator, pushed_btn chan eio.ButtonEvent, activeE
 	for {
 		select{
 		case btn := <- pushed_btn:
-			fmt.Println("Inside Button pushed")
-			o := orders.NewOrder(btn, e.ElevID)
-
-			if !orders.IsOrderInWorldview(o) {
-				//orders.MyWorldView = append(orders.MyWorldView, &o)
+			o := orders.NewOrder(btn, e.ElevID, send_to_fsm)
+			
+			
 				
-				transmitt_chan <- o
-
-			}
-	
+			fmt.Println("Sending Button WÆÆÆÆÆÆÆ")
+			//orders.MyWorldView = append(orders.MyWorldView, &o)
+			
+			transmitt_chan <- o
+			time.Sleep(1*time.Second)
+			
+			
 
 
 
 		case rec_order := <- recieve_chan:
-			fmt.Println("Inside Recieved Worldview")
+			
 			// CONFIRM ORDER
 			switch rec_order.OrderConfirmation {
 			case orders.UNCONFIRMED:
+				//fmt.Println("Order is unconfirmed")
 				if !orders.IsElevConfirmed(e, rec_order) {
 					rec_order.ElevsConfirmed = append(rec_order.ElevsConfirmed, e.ElevID)
 					
 					if len(rec_order.ElevsConfirmed) == len(activeElevators) {
 						rec_order.OrderConfirmation = orders.CONFIRMED
 						orders.MyWorldView = append(orders.MyWorldView, &rec_order)
+						
+						
 					}
+					BroadcastOrder(rec_order, transmitt_chan)
+					//fmt.Println("Broadcasted order:", rec_order)
 				}
-				BroadcastOrder(rec_order, transmitt_chan)
 				
 			case orders.CONFIRMED:
-				// Do Something else
-			
+				fmt.Println("Num Active Elevs:",len(activeElevators))
+				fmt.Println("Num Elevators in elevstates:", len(elevatorStates))
+				if rec_order.OrderState != orders.ASSIGNED {
+					orders.AssignOrderToElevator(&rec_order, elevatorStates)
+					eio.SetButtonLamp(rec_order.OrderType, rec_order.OrderFloor, true)
+					
+					if rec_order.AssignedElevator == e.ElevID{
+
+						fmt.Println("Order assigned to ME:)")
+						send_to_fsm <- eio.ButtonEvent{rec_order.OrderFloor,rec_order.OrderType}
+					}
+
+				}
+				
+				
+				
+				
+				
 			case orders.COMPLETED:
-				//Delete order
+				eio.SetButtonLamp(rec_order.OrderType, rec_order.OrderFloor, false)
+				
+				filtered_wv := orders.MyWorldView[:0]
+				for _, order := range orders.MyWorldView {
+					if order.OrderID != rec_order.OrderID {
+						filtered_wv = append(filtered_wv, order)
+					}else{
+						BroadcastOrder(rec_order, transmitt_chan)
+					}
+				}
+				orders.MyWorldView = filtered_wv
 			}
+			
 
 
 
@@ -98,9 +141,9 @@ func HandleButtonInput( e *ec.Elevator, pushed_btn chan eio.ButtonEvent, activeE
 }
 
 func BroadcastOrder(OrderUpdate orders.Order, transmitChan chan orders.Order) {
-	fmt.Println("Inside Broadcast Wv")
+	
 
 	transmitChan <- OrderUpdate
-	fmt.Println(transmitChan)
+	
 
 }

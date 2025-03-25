@@ -37,6 +37,7 @@ func InitElev(id string) Elevator{
 			rm[floor][btn] = 0
 		}
 	}
+	
 	return Elevator{
 		Floor: 			0,
 		Dir:        	eio.MD_Stop,
