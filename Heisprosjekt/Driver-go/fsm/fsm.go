@@ -96,6 +96,7 @@ func Run(
 				
 			}
 			transmitt_elev_chan <- *e
+		
 		case <- ea.DoorTimer.C:
 			
 			ea.Upon_Door_Timeout(e)

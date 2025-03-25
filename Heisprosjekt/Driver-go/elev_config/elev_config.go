@@ -10,6 +10,7 @@ const N_buttons int = 3
 
 const TRAVEL_TIME = 3000 * time.Millisecond
 const DOOR_TIMEOUT = 3000 * time.Millisecond
+const ORDER_TIMEOUT time.Duration = 5*time.Second
 
 type ElevatorBehavior int
 const (

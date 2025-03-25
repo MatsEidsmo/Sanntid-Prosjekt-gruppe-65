@@ -1,7 +1,7 @@
 package orders
 
 import (
-	//ea "Driver-go/elev_actuator"
+	ea "Driver-go/elev_actuator"
 	ec "Driver-go/elev_config"
 	el "Driver-go/elev_logic"
 	eio "Driver-go/elevio"
@@ -94,7 +94,7 @@ func AssignOrderToElevator(o *Order, active_elevs map[string]ec.Elevator) {
 		
 
 		curr_tth := TimeToRequestHandled(&elev, o)
-		fmt.Println("elev", id, "has calculated tth:", curr_tth)
+		//fmt.Println("elev", id, "has calculated tth:", curr_tth)
 		tth_arr = append(tth_arr, calc_struct{id,curr_tth})
 		
 		
@@ -260,6 +260,7 @@ func Complete_order( floor int, txOrderChan chan Order) {
 		if order.OrderFloor == floor{
 			order.OrderConfirmation = COMPLETED
 			txOrderChan <- *order
+			ea.OrderTimer_start()
 		}
 	}
 }

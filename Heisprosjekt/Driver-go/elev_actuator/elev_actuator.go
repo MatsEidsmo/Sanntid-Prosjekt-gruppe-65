@@ -10,6 +10,7 @@ import (
 )
 
 var DoorTimer *time.Timer
+var OrderTimer *time.Timer
 
 func Timer_init() {
 	DoorTimer = time.NewTimer(ec.DOOR_TIMEOUT)
@@ -29,7 +30,26 @@ func Timer_start() {
 	
 }
 
+func OrderTimer_init() {
+	OrderTimer = time.NewTimer(ec.DOOR_TIMEOUT)
+	if !OrderTimer.Stop() {
+		<- OrderTimer.C
+	}
+}
 
+func OrderTimer_start() {
+	OrderTimer.Stop()
+	select {
+	case <- OrderTimer.C:
+	default:
+	}
+	OrderTimer.Reset(ec.ORDER_TIMEOUT)
+	
+}
+
+func CallOrderTimerStart() {
+	OrderTimer_start()
+}
 
 func Open_Door(e *ec.Elevator) {
 	

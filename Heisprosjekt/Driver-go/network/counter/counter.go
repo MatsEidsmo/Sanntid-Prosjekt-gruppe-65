@@ -5,6 +5,7 @@ import (
 	//"time"
 	// el "Driver-go/elev_logic"
 	eio "Driver-go/elevio"
+	//ea "Driver-go/elev_actuator"
 	//bcast "Driver-go/network/bcast"
 	//"Driver-go/network/bcast"
 	hb "Driver-go/network/heartbeat"
@@ -31,6 +32,7 @@ func HandleButtonInput(
 	pushed_btn chan eio.ButtonEvent, 
 	recieve_chan chan orders.Order, 
 	transmitt_chan chan orders.Order,
+	transmitt_OTO_chan chan orders.Order,
 	transmitt_state_chan chan ec.Elevator,
 	activeElevators map[string]hb.Heartbeat, 
 	elevatorStates map[string]ec.Elevator,
@@ -57,7 +59,7 @@ func HandleButtonInput(
 
 
 		case rec_order := <- recieve_chan:
-			
+		
 			// CONFIRM ORDER
 			switch rec_order.OrderConfirmation {
 			case orders.UNCONFIRMED:
@@ -65,8 +67,9 @@ func HandleButtonInput(
 				if !orders.IsElevConfirmed(e, rec_order) {
 					rec_order.ElevsConfirmed = append(rec_order.ElevsConfirmed, e.ElevID)
 					
-					if len(rec_order.ElevsConfirmed) == len(activeElevators) {
+					if len(rec_order.ElevsConfirmed) == len(elevatorStates) {
 						rec_order.OrderConfirmation = orders.CONFIRMED
+						
 						orders.MyWorldView = append(orders.MyWorldView, &rec_order)
 						
 						
@@ -76,6 +79,7 @@ func HandleButtonInput(
 				}
 				
 			case orders.CONFIRMED:
+				transmitt_OTO_chan <- rec_order
 				fmt.Println("Num Active Elevs:",len(activeElevators))
 				fmt.Println("Num Elevators in elevstates:", len(elevatorStates))
 				if rec_order.OrderState != orders.ASSIGNED {

@@ -8,7 +8,7 @@ import (
 	fsm "Driver-go/fsm"
 	bcast "Driver-go/network/bcast"
 	hb "Driver-go/network/heartbeat"
-	"Driver-go/order_timeout"
+	//"Driver-go/order_timeout"
 
 	//so "Driver-go/network/sendorders"
 	counter "Driver-go/network/counter"
@@ -42,21 +42,26 @@ func Initialize_Elev(e *ec.Elevator, drv_floors chan int, TransmitStateChan chan
     e.Dir = eio.MD_Stop
 
     ea.Timer_init()
-
+	ea.OrderTimer_init()
+	
     el.Clear_RequestMatrix(e)
     
     e.Behaviour = ec.EB_Idle
 	TransmitStateChan <- *e
+	fmt.Println("hey")
     //e.ElevID = "Elevator1"
     
     
-
+	
     
-
+	
 }
 
-func main() {
 
+func main() {
+	
+	
+	
 	var id string
 	flag.StringVar(&id, "id", "", "id of this peer")
 	flag.Parse()
@@ -87,7 +92,6 @@ func main() {
 
 	var d eio.MotorDirection = eio.MD_Down
 	eio.SetMotorDirection(d)
-
     drv_floors := make(chan int)
 	drv_buttons := make(chan eio.ButtonEvent)
 	drv_obstr := make(chan bool)
@@ -97,49 +101,56 @@ func main() {
 	go eio.PollButtons(drv_buttons)
 	go eio.PollObstructionSwitch(drv_obstr)
 	go eio.PollStopButton(drv_stop)
-
-
+	
+	
     
     txhbChan := make(chan hb.Heartbeat)
 	rxhbChan := make(chan hb.Heartbeat)
 	
 	RecieveOrderChan := make(chan orders.Order)
 	TransmitOrderChan := make(chan orders.Order)
-
+	
 	TransmitStateChan := make(chan ec.Elevator)
 	RecieveStateChan := make(chan ec.Elevator)
 	
-	OrderReassignChan := make(chan orders.Order, 20) // Allowed to send 20 reassignments
+	txOrderTimeout := make(chan orders.Order)
+	rxOrderTimeout := make(chan orders.Order)
+	
+	//OrderReassignChan := make(chan orders.Order, 20) // Allowed to send 20 reassignments
 	
 	elevatorstates := make(map[string]ec.Elevator)
 	activeElevators := make(map[string]hb.Heartbeat)
-
-	go bcast.Transmitter(20025, txhbChan)
-	go bcast.Receiver(20025, rxhbChan)
-	go bcast.Transmitter(20025, TransmitOrderChan)
-	go bcast.Receiver(20025, RecieveOrderChan)
-	go bcast.Transmitter(20025, TransmitStateChan)
-	go bcast.Receiver(20025, RecieveStateChan)
 	
 	
-
+	go bcast.Transmitter(20023, txhbChan)
+	go bcast.Receiver(20023, rxhbChan)
+	go bcast.Transmitter(20023, TransmitOrderChan)
+	go bcast.Receiver(20023, RecieveOrderChan)
+	go bcast.Transmitter(20023, TransmitStateChan)
+	go bcast.Receiver(20023, RecieveStateChan)
+	go bcast.Transmitter(20023,txOrderTimeout)
+	go bcast.Receiver(20023, rxOrderTimeout)
+	
+	
+	Initialize_Elev(&e, drv_floors, TransmitStateChan)
+	
 	go hb.Transmitter(e, txhbChan)
 	go hb.Receiver(rxhbChan, activeElevators)
 	go hb.RemoveInactiveElevators(activeElevators, 4*time.Second)
 	
 	go sh.RecieveAndUpdateStates(RecieveStateChan, elevatorstates)
 
-	go order_timeout.OrderTimeout(RecieveOrderChan, OrderReassignChan, elevatorstates, 1)
+	//go order_timeout.OrderTimeout(txOrderTimeout, TransmitOrderChan, elevatorstates, ec.ORDER_TIMEOUT)
 
     
  	send_to_fsm := make(chan eio.ButtonEvent)
 	//block_chan := make(chan orders.OrderList)
 
-    Initialize_Elev(&e, drv_floors, TransmitStateChan)
+    
 
 	fmt.Println(e.ElevID)
 
-	go counter.HandleButtonInput(&e, drv_buttons, RecieveOrderChan, TransmitOrderChan, TransmitStateChan, activeElevators, elevatorstates, send_to_fsm)
+	go counter.HandleButtonInput(&e, drv_buttons, RecieveOrderChan, TransmitOrderChan, txOrderTimeout, TransmitStateChan, activeElevators, elevatorstates, send_to_fsm)
 
 
     defer fsm.Run(&e, send_to_fsm, drv_obstr, drv_floors, activeElevators, TransmitStateChan, TransmitOrderChan)
