@@ -7,7 +7,7 @@ import (
 	eio "Driver-go/elevio"
 	fsm "Driver-go/fsm"
 	bcast "Driver-go/network/bcast"
-	peers "Driver-go/network/bcast"
+	//peers "Driver-go/network/peers"
 	hb "Driver-go/network/heartbeat"
 	//so "Driver-go/network/sendorders"
 	"Driver-go/orders"
@@ -27,7 +27,7 @@ import (
 )
 
 
-func Initialize_Elev(e *ec.Elevator, drv_floors chan int, TransmitStateChan chan ec.Elevator, elev_states map[string]ec.Elevator) {
+func Initialize_Elev(e *ec.Elevator, drv_floors chan int, TransmitStateChan chan ec.Elevator, elev_states map[string]ec.Elevator, active_elevs map[string]hb.Heartbeat) {
     floornumber := <-drv_floors
     eio.SetMotorDirection(eio.MD_Down)
 	
@@ -44,16 +44,17 @@ func Initialize_Elev(e *ec.Elevator, drv_floors chan int, TransmitStateChan chan
     ea.Timer_init()
 
     el.Clear_RequestMatrix(e)
-    
+    fmt.Println("Hey")
     e.Behaviour = ec.EB_Idle
-    //e.ElevID = "Elevator1"
-
-	for {
-		TransmitStateChan <- *e
-		if len(elev_states) == ec.N_elevators {
-			break
-		}
-	}
+	TransmitStateChan <- *e
+    
+	// for {
+	// 	fmt.Println(len(elev_states))
+	// 	fmt.Println(len(active_elevs))
+	// 	if len(active_elevs) == ec.N_elevators {
+	// 		break
+	// 	}
+	// }
 
     
 
@@ -63,7 +64,7 @@ func Initialize_Elev(e *ec.Elevator, drv_floors chan int, TransmitStateChan chan
 
 func main() {
 	buff_size := 16*1024
-
+	
 	var id string
 	flag.StringVar(&id, "id", "", "id of this peer")
 	flag.Parse()
@@ -77,11 +78,12 @@ func main() {
 		id = fmt.Sprintf("peer-%s-%d", localIP, os.Getpid())
 	}
 	
-	port := 15657
+	port := 15001
+	 //15657
 	id_int, _ := strconv.Atoi(id)
 	
-	elev := ec.InitElev(id)
-	e := elev
+	e := ec.InitElev(id)
+	
 	eio.Init("localhost:"+strconv.Itoa(port+id_int), ec.N_floors)
 	//PeerList := make([]string, 0)
     //numFloors := 4
@@ -123,8 +125,8 @@ func main() {
 	go bcast.Receiver(20023, rxhbChan)
 	go bcast.Transmitter(20023, TransmitOrderChan)
 	go bcast.Receiver(20023, RecieveOrderChan)
-	go peers.Transmitter(20023, TransmitStateChan)
-	go peers.Receiver(20023, RecieveStateChan)
+	go bcast.Transmitter(20023, TransmitStateChan)
+	go bcast.Receiver(20023, RecieveStateChan)
 	
 	
 
@@ -138,7 +140,7 @@ func main() {
  	send_to_fsm := make(chan eio.ButtonEvent)
 	//block_chan := make(chan orders.OrderList)
 
-    Initialize_Elev(&e, drv_floors, TransmitStateChan, elevatorstates)
+    Initialize_Elev(&e, drv_floors, TransmitStateChan, elevatorstates, activeElevators)
 
 	fmt.Println(elevatorstates)
 

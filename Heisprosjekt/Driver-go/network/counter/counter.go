@@ -97,7 +97,10 @@ func HandleButtonInput(
 					}
 					
 					///// UNTESTED DEBUGGING
-				}else{
+				}else if rec_order.AssignedElevator != e.ElevID{
+					fmt.Println(e.ElevID)
+					fmt.Println(rec_order.AssignedElevator)
+					fmt.Println("yuhooo")
 					eio.SetButtonLamp(rec_order.OrderType, rec_order.OrderFloor, false)
 			
 				} //// END UNTESTED DEBUGGING

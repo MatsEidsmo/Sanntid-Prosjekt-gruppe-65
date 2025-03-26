@@ -72,11 +72,15 @@ func Run(
 				
 			curr_dir := el.Choose_Dir(e)
 			if btn.Floor == e.Floor && e.Behaviour != ec.EB_Moving{
+				fmt.Println(e.Behaviour)
+				fmt.Println("test")
 				ea.Open_Door(e)
 				orders.Complete_order(e.Floor, transmitt_order_chan)
 			}
-			if e.Behaviour != 0 && !e.Obstruction{
+			if e.Behaviour != ec.EB_DoorOpen && !e.Obstruction && curr_dir != eio.MD_Stop{
 				eio.SetMotorDirection(curr_dir)
+				e.Behaviour = ec.EB_Moving
+				
 			}
 			transmitt_elev_chan <- *e
 			//}
