@@ -17,6 +17,7 @@ import (
 	bcast "Driver-go/network/bcast"
 	//hb "Driver-go/network/heartbeat"
 	"sort"
+	"sync"
 )
 
 type OrderState int
@@ -56,6 +57,8 @@ type OrderList []*Order
 
 var MyWorldView OrderList
 
+var mu sync.Mutex
+
 func NewOrder(btn_event eio.ButtonEvent, elevID string, send_to_fsm chan eio.ButtonEvent) Order {
 	o:= Order{
 		OrderState: 	UNASSIGNED,
@@ -85,6 +88,7 @@ func AssignOrderToElevator(o *Order, active_elevs map[string]ec.Elevator) {
 	var tth_arr []calc_struct
 	
 	var min_ElevID string
+	mu.Lock()
 	for id, elev := range active_elevs {
 		
 		
@@ -95,7 +99,7 @@ func AssignOrderToElevator(o *Order, active_elevs map[string]ec.Elevator) {
 		
 		
 	}
-	
+	mu.Unlock()
 	sort.Slice(tth_arr, func(i, j int) bool {
         return tth_arr[i].duration < tth_arr[j].duration
     })
@@ -144,18 +148,19 @@ func TimeToRequestHandled(e *ec.Elevator, o *Order) (duration int) {
 	e_rm_copy := e.RequestMatrix
 	el.Add_Request(e, o.OrderFloor, o.OrderType)
 	
-	
+	fmt.Println("Floor:", e.Floor, "Dir:", e.Dir)
 	
 	switch e.Behaviour {
 	case ec.EB_Idle:
+		fmt.Println("Idle")
 		duration += o.OrderFloor*(int(ec.TRAVEL_TIME))
 		return duration
 	case ec.EB_DoorOpen:
-		//fmt.Println("Door open")
+		fmt.Println("Door open")
 		duration += int(ec.DOOR_TIMEOUT/2)
 		e.Dir = el.Choose_Dir(e)
 	case ec.EB_Moving:
-		//fmt.Println("Moving!")
+		fmt.Println("Moving!")
 		duration += int(ec.TRAVEL_TIME/2)
 		e.Floor += int(e.Dir)
 	}
@@ -164,6 +169,7 @@ func TimeToRequestHandled(e *ec.Elevator, o *Order) (duration int) {
 	
 	for {
 		
+		fmt.Println("Floor:", e.Floor, "Dir:", e.Dir)
 		if el.Stop_Here(e) {
 			//fmt.Println("Should stop here")
 			duration += int(ec.DOOR_TIMEOUT)
@@ -179,6 +185,13 @@ func TimeToRequestHandled(e *ec.Elevator, o *Order) (duration int) {
 		}
 		e.Floor += int(e.Dir)
 		duration += int(ec.TRAVEL_TIME)
+		if  0 <= e.Floor || e.Floor >= 3{
+			e.Floor = e_floor_copy
+			e.Dir = e_dir_copy
+			e.RequestMatrix = e_rm_copy
+				
+			return duration
+		}
 		//fmt.Println(e.Floor)
 	}
 }

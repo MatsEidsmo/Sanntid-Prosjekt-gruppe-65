@@ -48,12 +48,14 @@ func Initialize_Elev(e *ec.Elevator, drv_floors chan int, TransmitStateChan chan
     e.Behaviour = ec.EB_Idle
     //e.ElevID = "Elevator1"
 
-	for {
+	
+	// for {
 		TransmitStateChan <- *e
-		if len(elev_states) == ec.N_elevators {
-			break
-		}
-	}
+	// 	if len(elev_states) == ec.N_elevators || {
+	// 		break
+	// 	}
+		
+	// }
 
     
 
@@ -77,7 +79,10 @@ func main() {
 		id = fmt.Sprintf("peer-%s-%d", localIP, os.Getpid())
 	}
 	
-	port := 15657
+	port := 15000
+
+
+
 	id_int, _ := strconv.Atoi(id)
 	
 	elev := ec.InitElev(id)
