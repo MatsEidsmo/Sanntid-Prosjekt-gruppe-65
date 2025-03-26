@@ -109,7 +109,7 @@ func Run(
 		case obstr := <- obstr_chann:
 			e.Obstruction = obstr
 			transmitt_elev_chan <- *e
-			if !obstr && e.Behaviour == ec.EB_DoorOpen {
+			if  e.Behaviour != ec.EB_Moving {
 				ea.Open_Door(e)
 			}
 		}
