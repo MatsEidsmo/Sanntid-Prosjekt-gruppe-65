@@ -84,6 +84,7 @@ func main() {
 
 
 
+
 	id_int, _ := strconv.Atoi(id)
 	
 	elev := ec.InitElev(id)
@@ -134,9 +135,9 @@ func main() {
 	
 	
 
-	go hb.Transmitter(e, txhbChan)
-	go hb.Receiver(rxhbChan, activeElevators)
-	go hb.RemoveInactiveElevators(activeElevators, elevatorstates, 5*time.Second)
+	go hb.Transmitter(e, txhbChan, TransmitStateChan)
+	go hb.Receiver(rxhbChan, activeElevators, RecieveStateChan, elevatorstates)
+	go hb.RemoveInactiveElevators(activeElevators, elevatorstates, 10*time.Second)
 	
 	go sh.RecieveAndUpdateStates(RecieveStateChan, elevatorstates)
 

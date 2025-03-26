@@ -15,16 +15,17 @@ type Heartbeat struct {
 	Timestamp time.Time
 }
 
-func Transmitter(elevator ec.Elevator, txChan chan Heartbeat) {
+func Transmitter(elevator ec.Elevator, txChan chan Heartbeat, txElevState chan ec.Elevator) {
 	for {
 		txChan <- Heartbeat{Elevator: elevator, Timestamp: time.Now()}
+		txElevState <- elevator
 		time.Sleep(200 * time.Millisecond) 
 		//fmt.Println(elevator)
 		
 	}
 }
 
-func Receiver(rxChan chan Heartbeat, activeElevators map[string]Heartbeat) {
+func Receiver(rxChan chan Heartbeat, activeElevators map[string]Heartbeat, rxStateChan chan ec.Elevator, elevatorstate map[string]ec.Elevator) {
 	for {
 		heartbeat := <-rxChan
 		//fmt.Println(heartbeat.Elevator)
@@ -32,6 +33,8 @@ func Receiver(rxChan chan Heartbeat, activeElevators map[string]Heartbeat) {
 		//fmt.Println("Recieved Heartbeat from:", string(heartbeat.Elevator.ElevID))
 		//fmt.Println(activeElevators)
 		//fmt.Println(len(activeElevators))
+		elevstate := <- rxStateChan
+		elevatorstate[elevstate.ElevID] = elevstate
 
 	}
 }
