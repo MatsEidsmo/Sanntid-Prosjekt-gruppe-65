@@ -7,6 +7,7 @@ import (
 
 const N_floors int = 4
 const N_buttons int = 3
+const N_elevators int = 3
 
 const TRAVEL_TIME = 3000 * time.Millisecond
 const DOOR_TIMEOUT = 3000 * time.Millisecond
@@ -37,6 +38,7 @@ func InitElev(id string) Elevator{
 			rm[floor][btn] = 0
 		}
 	}
+	
 	return Elevator{
 		Floor: 			0,
 		Dir:        	eio.MD_Stop,

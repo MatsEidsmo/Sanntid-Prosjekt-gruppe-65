@@ -18,8 +18,8 @@ type Heartbeat struct {
 func Transmitter(elevator ec.Elevator, txChan chan Heartbeat) {
 	for {
 		txChan <- Heartbeat{Elevator: elevator, Timestamp: time.Now()}
-		time.Sleep(2000 * time.Millisecond) 
-		
+		time.Sleep(200 * time.Millisecond) 
+		//fmt.Println(elevator)
 		
 	}
 }
@@ -27,14 +27,16 @@ func Transmitter(elevator ec.Elevator, txChan chan Heartbeat) {
 func Receiver(rxChan chan Heartbeat, activeElevators map[string]Heartbeat) {
 	for {
 		heartbeat := <-rxChan
+		//fmt.Println(heartbeat.Elevator)
 		activeElevators[heartbeat.Elevator.ElevID] = heartbeat
 		//fmt.Println("Recieved Heartbeat from:", string(heartbeat.Elevator.ElevID))
 		//fmt.Println(activeElevators)
 		//fmt.Println(len(activeElevators))
+
 	}
 }
 
-func RemoveInactiveElevators(activeElevators map[string]Heartbeat, timeout time.Duration) {
+func RemoveInactiveElevators(activeElevators map[string]Heartbeat, elevatorstates map[string]ec.Elevator,  timeout time.Duration) {
 	for {
 		time.Sleep(timeout)
 		now := time.Now()
@@ -42,6 +44,7 @@ func RemoveInactiveElevators(activeElevators map[string]Heartbeat, timeout time.
 			if now.Sub(hb.Timestamp) > timeout {
 				fmt.Printf("Elevator %s lost connection\n", id)
 				delete(activeElevators, id)
+				delete(elevatorstates, id)
 			}
 		}
 	}

@@ -3,6 +3,7 @@ package requests
 import (
 	eio "Driver-go/elevio"
 	ec "Driver-go/elev_config"
+	"fmt"
 )
 
 func requests_above(e *ec.Elevator) bool {
@@ -37,8 +38,10 @@ func requests_here(e *ec.Elevator) int {
 }
 
 func Add_Request(e *ec.Elevator, floor int, btnType eio.ButtonType) {
-	e.RequestMatrix[floor][btnType] = 1
-	eio.SetButtonLamp(btnType, floor, true)
+	if !(e.Behaviour != ec.EB_Moving && btnType == eio.BT_Cab && floor == e.Floor){
+		e.RequestMatrix[floor][btnType] = 1
+		
+	}
 	
 	
 }
@@ -107,6 +110,9 @@ func Choose_Dir(e *ec.Elevator) eio.MotorDirection {
 }
 
 func Stop_Here(e *ec.Elevator) bool {
+	fmt.Println(e.RequestMatrix)
+	fmt.Println(e.Floor)
+	
 	if e.RequestMatrix[e.Floor][eio.BT_Cab] == 1 {
 		return true
 	}
