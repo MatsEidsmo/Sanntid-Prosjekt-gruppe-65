@@ -94,12 +94,13 @@ func AssignOrderToElevator(o *Order, active_elevs map[string]ec.Elevator) {
 		
 
 		curr_tth := TimeToRequestHandled(&elev, o)
-		//fmt.Println("elev", id, "has calculated tth:", curr_tth)
 		tth_arr = append(tth_arr, calc_struct{id,curr_tth})
 		
 		
 	}
 	mu.Unlock()
+
+	// Sort the array of elevators based on time to request is handled, then alphabetically by ElevID
 	sort.Slice(tth_arr, func(i, j int) bool {
         return tth_arr[i].duration < tth_arr[j].duration
     })
@@ -114,7 +115,9 @@ func AssignOrderToElevator(o *Order, active_elevs map[string]ec.Elevator) {
 	sort.Slice(equal_durations, func(i, j int) bool {
 		return equal_durations[i] < equal_durations[j]
     })
-	
+	//End of sorting
+
+
 	min_ElevID = equal_durations[0]
 	
 	fmt.Println("Assigned Elevator:", min_ElevID)
@@ -123,23 +126,10 @@ func AssignOrderToElevator(o *Order, active_elevs map[string]ec.Elevator) {
 	o.OrderState = ASSIGNED
 }
 
-	// time1 := TimeToIdle(e1)
-	// time2 := TimeToIdle(e2)
-	// time3 := TimeToIdle(e3)
-	// if time1 <= time2 {
-	// 	if time1 <= time3 {
-	// 		o.AssignedElevator = e1.ElevID
-	// 	}
-	// }else if time2 <= time3{
-	// 	o.AssignedElevator = e2.ElevID
-	// }else {
-	// 	o.AssignedElevator = e3.ElevID
-	// }
 	
 
 
-
-
+//Adds order to local requestmatrix, then calculates the time it takes to complete all orders. returns this as an int.
 func TimeToRequestHandled(e *ec.Elevator, o *Order) (duration int) {
 	
 	duration = 0
@@ -148,19 +138,16 @@ func TimeToRequestHandled(e *ec.Elevator, o *Order) (duration int) {
 	e_rm_copy := e.RequestMatrix
 	el.Add_Request(e, o.OrderFloor, o.OrderType)
 	
-	fmt.Println("Floor:", e.Floor, "Dir:", e.Dir)
+	
 	
 	switch e.Behaviour {
 	case ec.EB_Idle:
-		fmt.Println("Idle")
 		duration += o.OrderFloor*(int(ec.TRAVEL_TIME))
 		return duration
 	case ec.EB_DoorOpen:
-		fmt.Println("Door open")
 		duration += int(ec.DOOR_TIMEOUT/2)
 		e.Dir = el.Choose_Dir(e)
 	case ec.EB_Moving:
-		fmt.Println("Moving!")
 		duration += int(ec.TRAVEL_TIME/2)
 		e.Floor += int(e.Dir)
 	}
@@ -169,7 +156,6 @@ func TimeToRequestHandled(e *ec.Elevator, o *Order) (duration int) {
 	
 	for {
 		
-		fmt.Println("Floor:", e.Floor, "Dir:", e.Dir)
 		if el.Stop_Here(e) {
 			//fmt.Println("Should stop here")
 			duration += int(ec.DOOR_TIMEOUT)
@@ -192,7 +178,7 @@ func TimeToRequestHandled(e *ec.Elevator, o *Order) (duration int) {
 				
 			return duration
 		}
-		//fmt.Println(e.Floor)
+		
 	}
 }
 

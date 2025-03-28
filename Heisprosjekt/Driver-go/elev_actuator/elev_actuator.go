@@ -42,8 +42,9 @@ func Open_Door(e *ec.Elevator) {
 	
 }
 
+//Checks if obstruction is active, if not closes the door and chooses direction.
 func Upon_Door_Timeout(e *ec.Elevator) {
-	//fmt.Println("doortimeout")
+	
 
 	if e.Obstruction {
 		println("Obstruction true")

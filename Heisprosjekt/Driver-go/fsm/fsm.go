@@ -27,48 +27,11 @@ func Run(
 	for {
 		select {
 		case btn := <- pushed_btn:
-			fmt.Println("Button recieved!")
+			
 
 			el.Add_Request(e, btn.Floor, btn.Button)
 			eio.SetButtonLamp(btn.Button, btn.Floor, true)
 
-			// el.Add_Request(e, btn.Floor, btn.Button)
-
-			// fmt.Println(*e)
-			
-			// transmitt_elev_chan <- hb.Heartbeat{Elevator: *e, Timestamp: time.Now()}
-
-			// new_order := orders.NewOrder(btn, e.ElevID)
-			
-			// time.Sleep(1*time.Second)
-			
-			// fmt.Println("Before ATE")
-			// orders.AssignOrderToElevator(&new_order, active_elevs)
-			
-			// fmt.Println("Assigned to Elevator")
-
-			//txChan := make(chan eio.ButtonEvent)
-			//rxChan := make(chan string)
-			
-
-    
-            
-            //time.Sleep(2*time.Second)
-        
-    
-
-    
-            //Recieved_btn := <- rxBtnChan
-            //eio.PrintButtonEvent(Recieved_btn)
-      
-
-			// Gi beskjed om mottat btn.
-			//Vent på confirmation om btn
-			// Regn ut hvilken heis som skal kjøre
-			// if Heis som skal kjøre == denne heisen
-			//if e.ElevID == new_order.AssignedElevator {
-
-				
 				
 			curr_dir := el.Choose_Dir(e)
 			fmt.Println(curr_dir)
@@ -81,20 +44,18 @@ func Run(
 				e.Behaviour = ec.EB_Moving
 			}
 			transmitt_elev_chan <- *e
-			//}
+			
 				
 			
 		case floor := <- floor_sensor:
 
 			eio.SetFloorIndicator(floor)
-			// fmt.Println("Floor: " , floor)
-			// fmt.Println("Dir: " , e.Dir)
 			e.Floor = floor
+
 			if el.Stop_Here(e) {
-				// fmt.Println("Elevator stopping")
+				fmt.Println("Arrived at floor:", e.Floor)
 				ea.Open_Door(e)
 				e.Behaviour = ec.EB_DoorOpen
-				
 				orders.Complete_order(floor, transmitt_order_chan)
 				
 			}

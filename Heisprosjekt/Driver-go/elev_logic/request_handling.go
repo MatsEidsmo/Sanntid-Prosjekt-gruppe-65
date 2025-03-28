@@ -109,6 +109,7 @@ func Choose_Dir(e *ec.Elevator) eio.MotorDirection {
 	return eio.MD_Stop
 }
 
+//Checks if the elevator should stop at this floor, returns this as bool.
 func Stop_Here(e *ec.Elevator) bool {
 	fmt.Println(e.RequestMatrix)
 	fmt.Println(e.Floor)

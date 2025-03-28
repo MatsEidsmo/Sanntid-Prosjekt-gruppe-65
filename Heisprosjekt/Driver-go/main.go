@@ -46,22 +46,16 @@ func Initialize_Elev(e *ec.Elevator, drv_floors chan int, TransmitStateChan chan
     el.Clear_RequestMatrix(e)
     
     e.Behaviour = ec.EB_Idle
-    //e.ElevID = "Elevator1"
+    
 
 	TransmitStateChan <- *e
 	elev_states[e.ElevID] = *e
-	// for {
-	// 	if len(elev_states) == ec.N_elevators || {
-	// 		break
-	// 	}
-		
-	// }
-
-    
-
-    
 
 }
+
+
+
+
 
 func main() {
 	buff_size := 16*1024
@@ -79,26 +73,14 @@ func main() {
 		id = fmt.Sprintf("peer-%s-%d", localIP, os.Getpid())
 	}
 	
-	port := 15001
-
-
-
-
-
+	port := 15657
 
 	id_int, _ := strconv.Atoi(id)
 	
 	elev := ec.InitElev(id)
 	e := elev
 	eio.Init("localhost:"+strconv.Itoa(port+id_int), ec.N_floors)
-	//PeerList := make([]string, 0)
-    //numFloors := 4
-   
-    
-    //var e ec.Elevator
-    
-    
-    //eio.Init("localhost:15657", numFloors)
+	
 
 	var d eio.MotorDirection = eio.MD_Down
 	eio.SetMotorDirection(d)
@@ -144,7 +126,7 @@ func main() {
 
     
  	send_to_fsm := make(chan eio.ButtonEvent)
-	//block_chan := make(chan orders.OrderList)
+	
 
     Initialize_Elev(&e, drv_floors, TransmitStateChan, elevatorstates)
 

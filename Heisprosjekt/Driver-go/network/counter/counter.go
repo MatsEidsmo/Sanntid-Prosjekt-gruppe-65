@@ -27,6 +27,8 @@ func ConfirmedQueue(wholeOrderList orders.OrderList) (confirmedOrderList orders.
 	return confirmedOrderList
 }
 
+//Takes in buttonevent, confirms this order, calculates which elevator should be assigned,
+//then sends the buttonevent to the relevant single elevator controller. 
 func HandleButtonInput( 
 	e *ec.Elevator, 
 	pushed_btn chan eio.ButtonEvent, 
@@ -55,23 +57,18 @@ func HandleButtonInput(
 			}
 			
 				
-			fmt.Println("Sending Button WÆÆÆÆÆÆÆ")
-			//orders.MyWorldView = append(orders.MyWorldView, &o)
+			fmt.Println("Sending Button")
+			
 			
 			transmitt_chan <- o
 			
-			
-			
-			
-
-
 
 		case rec_order := <- recieve_chan:
 			
-			// CONFIRM ORDER
+			// Confrim order by waiting for all elevators confirm the order.
 			switch rec_order.OrderConfirmation {
 			case orders.UNCONFIRMED:
-				//fmt.Println("Order is unconfirmed")
+				
 				if !orders.IsElevConfirmed(e, rec_order) {
 					rec_order.ElevsConfirmed = append(rec_order.ElevsConfirmed, e.ElevID)
 					
@@ -82,12 +79,10 @@ func HandleButtonInput(
 						
 					}
 					BroadcastOrder(rec_order, transmitt_chan)
-					//fmt.Println("Broadcasted order:", rec_order)
+					
 				}
 				
 			case orders.CONFIRMED:
-				fmt.Println("Num Active Elevs:",len(activeElevators))
-				fmt.Println("Num Elevators in elevstates:", len(elevatorStates))
 				if rec_order.OrderState != orders.ASSIGNED {
 					orders.AssignOrderToElevator(&rec_order, elevatorStates)
 					eio.SetButtonLamp(rec_order.OrderType, rec_order.OrderFloor, true)
